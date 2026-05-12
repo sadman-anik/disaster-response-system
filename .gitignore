@@ -1,0 +1,15 @@
+# Maven build output
+target/
+*.class
+
+# Maven compiler tracking files
+maven-status/
+createdFiles.lst
+inputFiles.lst
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Java / Maven logs
+*.log

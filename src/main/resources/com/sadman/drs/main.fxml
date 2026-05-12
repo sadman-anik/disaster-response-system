@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17.0.10" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.sadman.drs.controller.MainController" styleClass="root-pane">
+
+    <left>
+        <VBox spacing="12" styleClass="sidebar" prefWidth="250">
+            <padding>
+                <Insets top="24" right="18" bottom="24" left="18" />
+            </padding>
+            <Label text="DRS" styleClass="app-title" />
+            <Label text="Disaster Response System" styleClass="app-subtitle" />
+            <Separator />
+            <Button text="Dashboard" onAction="#showDashboard" styleClass="nav-button" />
+            <Button text="Report Disaster" onAction="#showReportDisaster" styleClass="nav-button" />
+            <Button text="Assess Report" onAction="#showAssessment" styleClass="nav-button" />
+            <Button text="Department Task" onAction="#showCoordination" styleClass="nav-button" />
+            <Button text="Update Task Status" onAction="#showDepartments" styleClass="nav-button" />
+            <Button text="Manage Resources" onAction="#showResources" styleClass="nav-button" />
+            <Button text="Report Status" onAction="#showReports" styleClass="nav-button" />
+            <Region VBox.vgrow="ALWAYS" />
+            <Label text="Storage: MySQL" styleClass="small-muted" />
+            <Label fx:id="databaseStatusLabel" text="Checking database..." styleClass="status-pill" />
+        </VBox>
+    </left>
+
+    <top>
+        <HBox alignment="CENTER_LEFT" styleClass="topbar">
+            <padding>
+                <Insets top="18" right="28" bottom="18" left="28" />
+            </padding>
+            <Label fx:id="pageTitleLabel" text="Dashboard" styleClass="page-title" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button text="Refresh All" onAction="#refreshAllData" styleClass="secondary-button" />
+        </HBox>
+    </top>
+
+    <center>
+        <StackPane styleClass="content-area">
+            <padding>
+                <Insets top="20" right="28" bottom="28" left="28" />
+            </padding>
+
+            <VBox fx:id="dashboardPane" spacing="18">
+                <HBox spacing="18">
+                    <VBox styleClass="stat-card" HBox.hgrow="ALWAYS">
+                        <Label text="Total Reports" styleClass="stat-label" />
+                        <Label fx:id="totalReportsLabel" text="0" styleClass="stat-number" />
+                    </VBox>
+                    <VBox styleClass="stat-card" HBox.hgrow="ALWAYS">
+                        <Label text="Critical Reports" styleClass="stat-label" />
+                        <Label fx:id="criticalReportsLabel" text="0" styleClass="stat-number" />
+                    </VBox>
+                    <VBox styleClass="stat-card" HBox.hgrow="ALWAYS">
+                        <Label text="Open Tasks" styleClass="stat-label" />
+                        <Label fx:id="openTasksLabel" text="0" styleClass="stat-number" />
+                    </VBox>
+                    <VBox styleClass="stat-card" HBox.hgrow="ALWAYS">
+                        <Label text="Available Resources" styleClass="stat-label" />
+                        <Label fx:id="availableResourcesLabel" text="0" styleClass="stat-number" />
+                    </VBox>
+                </HBox>
+                <HBox spacing="18" VBox.vgrow="ALWAYS">
+                    <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS">
+                        <Label text="Reports by Status" styleClass="section-title" />
+                        <PieChart fx:id="reportStatusChart" legendVisible="true" labelsVisible="true" VBox.vgrow="ALWAYS" />
+                    </VBox>
+                    <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS">
+                        <Label text="In Progress Tasks by Department" styleClass="section-title" />
+                        <BarChart fx:id="taskDepartmentChart" legendVisible="false" animated="false" VBox.vgrow="ALWAYS">
+                            <xAxis>
+                                <CategoryAxis label="Department" />
+                            </xAxis>
+                            <yAxis>
+                                <NumberAxis label="In Progress Tasks" />
+                            </yAxis>
+                        </BarChart>
+                    </VBox>
+                </HBox>
+                <VBox styleClass="card" spacing="10" VBox.vgrow="ALWAYS">
+                    <Label text="Available Resources" styleClass="section-title" />
+                    <BarChart fx:id="resourceAvailabilityChart" legendVisible="false" animated="false" VBox.vgrow="ALWAYS">
+                        <xAxis>
+                            <CategoryAxis label="Resource" />
+                        </xAxis>
+                        <yAxis>
+                            <NumberAxis label="Quantity Available" />
+                        </yAxis>
+                    </BarChart>
+                </VBox>
+            </VBox>
+
+            <VBox fx:id="reportPane" spacing="18" visible="false" managed="false">
+                <HBox spacing="18">
+                    <VBox styleClass="card" spacing="12" HBox.hgrow="ALWAYS">
+                        <Label text="Submit Disaster Report" styleClass="section-title" />
+                        <GridPane hgap="12" vgap="12">
+                            <Label text="Report Title" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                            <TextField fx:id="reportTitleField" promptText="e.g. Parramatta Fire Emergency" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+                            <Label text="Disaster Type" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                            <ComboBox fx:id="disasterTypeComboBox" prefWidth="260" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+                            <Label text="Severity" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+                            <ComboBox fx:id="severityComboBox" prefWidth="260" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+                            <Label text="Location" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+                            <TextField fx:id="locationField" promptText="e.g. Parramatta" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+                            <Label text="Reported By" GridPane.rowIndex="4" GridPane.columnIndex="0" />
+                            <TextField fx:id="reportedByField" promptText="Reporter name" GridPane.rowIndex="4" GridPane.columnIndex="1" />
+                            <Label text="Contact" GridPane.rowIndex="5" GridPane.columnIndex="0" />
+                            <TextField fx:id="contactNumberField" promptText="Phone number" GridPane.rowIndex="5" GridPane.columnIndex="1" />
+                        </GridPane>
+                        <Label text="Description" />
+                        <TextArea fx:id="descriptionArea" promptText="Describe what happened, damage, people affected, and urgent needs..." prefRowCount="5" wrapText="true" />
+                        <HBox spacing="12">
+                            <Button fx:id="checkDuplicateButton"
+                                    text="Check Duplicate"
+                                    onAction="#checkDuplicateReport"
+                                    styleClass="secondary-button" />
+
+                            <Button fx:id="submitReportButton"
+                                    text="Submit Report"
+                                    onAction="#submitDisasterReport"
+                                    styleClass="primary-button"
+                                    disable="true" />
+                        </HBox>
+                        <Label fx:id="duplicateWarningLabel"
+                            text="Please check duplicate before submitting."
+                            styleClass="info-label" />
+                    </VBox>
+                    <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS">
+                        <Label text="Generated Result" styleClass="section-title" />
+                        <TextArea fx:id="reportResultArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS" />
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <VBox fx:id="assessmentPane" spacing="18" visible="false" managed="false">
+                <HBox spacing="18">
+                    <VBox styleClass="card" spacing="12" HBox.hgrow="ALWAYS">
+                        <Label text="Quick Assessment &amp; Priority" styleClass="section-title" />
+                        <Label text="Select Report" />
+                        <ComboBox fx:id="assessmentReportComboBox" prefWidth="520" />
+                        <GridPane hgap="12" vgap="12">
+                            <Label text="Damage Level" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                            <ComboBox fx:id="damageLevelComboBox" prefWidth="240" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+                            <Label text="People Affected" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                            <TextField fx:id="peopleAffectedField" promptText="e.g. 45" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+                            <CheckBox fx:id="infrastructureDamageCheckBox" text="Infrastructure damage present" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+                        </GridPane>
+                        <Button text="Generate &amp; Save Assessment" onAction="#generateAssessment" styleClass="primary-button" />
+                        <TextArea fx:id="assessmentOutputArea" editable="false" wrapText="true" prefRowCount="8" />
+                    </VBox>
+                    <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS">
+                        <Label text="Assessment History" styleClass="section-title" />
+                        <TableView fx:id="assessmentTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="assessmentIdColumn" text="ID" prefWidth="55" />
+                                <TableColumn fx:id="assessmentReportIdColumn" text="Report ID + Title" prefWidth="220" />
+                                <TableColumn fx:id="assessmentDamageColumn" text="Damage" prefWidth="95" />
+                                <TableColumn fx:id="assessmentPeopleColumn" text="People" prefWidth="80" />
+                                <TableColumn fx:id="assessmentScoreColumn" text="Score" prefWidth="70" />
+                                <TableColumn fx:id="assessmentPriorityColumn" text="Priority" prefWidth="100" />
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <VBox fx:id="coordinationPane" spacing="18" visible="false" managed="false">
+                <HBox spacing="18">
+                    <VBox styleClass="card" spacing="12" HBox.hgrow="ALWAYS">
+                        <Label text="Create Custom Response Task" styleClass="section-title" />
+                        <Label text="Disaster Report" />
+                        <ComboBox fx:id="taskReportComboBox" prefWidth="520" />
+                        <Label text="Department / Organisation" />
+                        <ComboBox fx:id="taskDepartmentComboBox" prefWidth="520" />
+                        <GridPane hgap="12" vgap="12">
+                            <Label text="Activity" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                            <ComboBox fx:id="activityTypeComboBox" prefWidth="240" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+                            <Label text="Priority" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                            <ComboBox fx:id="taskPriorityComboBox" prefWidth="240" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+                        </GridPane>
+                        <TextArea fx:id="taskDescriptionArea" promptText="Use this only for extra/manual tasks. Standard tasks are created automatically after assessment." prefRowCount="4" wrapText="true" />
+                        <HBox spacing="12">
+                            <Button text="Create Custom Task" onAction="#createResponseTask" styleClass="primary-button" />
+                        </HBox>
+                        <TextArea fx:id="coordinationOutputArea" editable="false" wrapText="true" prefRowCount="5" />
+                    </VBox>
+                    <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS">
+                        <Label text="Response Task List" styleClass="section-title" />
+                        <TableView fx:id="taskTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="taskIdColumn" text="ID" prefWidth="55" />
+                                <TableColumn fx:id="taskReportIdColumn" text="Report ID + Title" prefWidth="190" />
+                                <TableColumn fx:id="taskDepartmentColumn" text="Department" prefWidth="160" />
+                                <TableColumn fx:id="taskActivityColumn" text="Activity" prefWidth="155" />
+                                <TableColumn fx:id="taskPriorityColumn" text="Priority" prefWidth="80" />
+                                <TableColumn fx:id="taskStatusColumn" text="Status" prefWidth="90" />
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <VBox fx:id="departmentsPane" spacing="18" visible="false" managed="false">
+                <HBox spacing="18">
+                    <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS">
+                        <Label text="Departments &amp; External Organisations" styleClass="section-title" />
+                        <TableView fx:id="departmentTable" prefHeight="230">
+                            <columns>
+                                <TableColumn fx:id="departmentIdColumn" text="ID" prefWidth="55" />
+                                <TableColumn fx:id="departmentNameColumn" text="Name" prefWidth="180" />
+                                <TableColumn fx:id="departmentServiceColumn" text="Service" prefWidth="260" />
+                                <TableColumn fx:id="departmentContactColumn" text="Contact" prefWidth="105" />
+                                <TableColumn fx:id="departmentStatusColumn" text="Status" prefWidth="95" />
+                            </columns>
+                        </TableView>
+                        <Label text="Update Assigned Task Status" styleClass="section-title" />
+                        <Label text="Select an assigned response task, then update its task workflow status here." styleClass="small-muted" />
+                        <TableView fx:id="departmentTaskTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="departmentTaskIdColumn" text="Task ID" prefWidth="65" />
+                                <TableColumn fx:id="departmentTaskReportColumn" text="Report ID + Title" prefWidth="210" />
+                                <TableColumn fx:id="departmentTaskDepartmentColumn" text="Department" prefWidth="170" />
+                                <TableColumn fx:id="departmentTaskActivityColumn" text="Activity" prefWidth="170" />
+                                <TableColumn fx:id="departmentTaskPriorityColumn" text="Priority" prefWidth="85" />
+                                <TableColumn fx:id="departmentTaskStatusColumn" text="Task Status" prefWidth="105" />
+                            </columns>
+                        </TableView>
+                        <HBox spacing="8">
+                            <ComboBox fx:id="departmentTaskStatusComboBox" promptText="Task status" prefWidth="180" />
+                            <Button text="Update Task Status" onAction="#updateSelectedDepartmentTaskStatus" styleClass="primary-button" />
+                        </HBox>
+                        <HBox spacing="8">
+                            <Button text="Mark Pending" onAction="#markDepartmentTaskPending" styleClass="secondary-button" />
+                            <Button text="Mark In Progress" onAction="#markDepartmentTaskInProgress" styleClass="secondary-button" />
+                            <Button text="Complete Task" onAction="#completeDepartmentTask" styleClass="primary-button" />
+                        </HBox>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <VBox fx:id="resourcesPane" spacing="18" visible="false" managed="false">
+                <HBox spacing="18">
+                    <VBox styleClass="card" spacing="12" HBox.hgrow="ALWAYS">
+                        <Label text="Emergency Resource Recommendation &amp; Allocation" styleClass="section-title" />
+                        <Label text="Disaster Report" />
+                        <ComboBox fx:id="resourceReportComboBox" prefWidth="520" />
+                        <Button text="Recommend Resources" onAction="#recommendResourcesForSelectedReport" styleClass="secondary-button" />
+                        <Label text="Allocate Resource" />
+                        <ComboBox fx:id="resourceComboBox" prefWidth="520" />
+                        <TextField fx:id="quantityField" promptText="Quantity" />
+                        <Button text="Allocate Selected Resource" onAction="#allocateSelectedResource" styleClass="primary-button" />
+                        <TextArea fx:id="resourceOutputArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS" />
+                    </VBox>
+                    <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS">
+                        <Label text="Available Resources" styleClass="section-title" />
+                        <TableView fx:id="resourceTable" prefHeight="250">
+                            <columns>
+                                <TableColumn fx:id="resourceIdColumn" text="ID" prefWidth="60" />
+                                <TableColumn fx:id="resourceNameColumn" text="Resource" prefWidth="180" />
+                                <TableColumn fx:id="resourceCategoryColumn" text="Category" prefWidth="120" />
+                                <TableColumn fx:id="resourceQuantityColumn" text="Qty" prefWidth="70" />
+                            </columns>
+                        </TableView>
+                        <Label text="Resource Allocations" styleClass="section-title" />
+                        <TableView fx:id="allocationTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="allocationIdColumn" text="ID" prefWidth="55" />
+                                <TableColumn fx:id="allocationReportIdColumn" text="Report" prefWidth="70" />
+                                <TableColumn fx:id="allocationResourceColumn" text="Resource" prefWidth="190" />
+                                <TableColumn fx:id="allocationQuantityColumn" text="Qty" prefWidth="70" />
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <VBox fx:id="reportsPane" spacing="18" visible="false" managed="false">
+                <HBox spacing="18">
+                    <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS">
+                        <Label text="Search &amp; View Disaster Reports" styleClass="section-title" />
+                        <HBox spacing="10">
+                            <TextField fx:id="searchField" promptText="Search by title, type, location, status or priority" HBox.hgrow="ALWAYS" />
+                            <Button text="Search" onAction="#searchReports" styleClass="secondary-button" />
+                        </HBox>
+                        <TableView fx:id="reportTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="reportDisplayColumn" text="Report ID + Title" prefWidth="220" />
+                                <TableColumn fx:id="reportTypeColumn" text="Type" prefWidth="100" />
+                                <TableColumn fx:id="reportSeverityColumn" text="Severity" prefWidth="90" />
+                                <TableColumn fx:id="reportLocationColumn" text="Location" prefWidth="150" />
+                                <TableColumn fx:id="reportPriorityColumn" text="Priority" prefWidth="90" />
+                                <TableColumn fx:id="reportStatusColumn" text="Status" prefWidth="100" />
+                            </columns>
+                        </TableView>
+                    </VBox>
+                    <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS">
+                        <Label text="Selected Report Details" styleClass="section-title" />
+                        <TextArea fx:id="reportDetailsArea" editable="false" wrapText="true" prefRowCount="12" VBox.vgrow="ALWAYS" />
+                        <Separator />
+                        <Label text="Update Report Workflow Status" styleClass="section-title" />
+                        <ComboBox fx:id="reportStatusComboBox" promptText="Choose report status" prefWidth="320" />
+                        <HBox spacing="8">
+                            <Button text="Update Status" onAction="#updateSelectedReportStatus" styleClass="secondary-button" />
+                            <Button text="Mark Assessed" onAction="#markSelectedReportAssessed" styleClass="secondary-button" />
+                            <Button text="Complete Report" onAction="#completeSelectedReport" styleClass="primary-button" />
+                        </HBox>
+                        <Separator />
+                        <Label text="Task workflow updates are managed from the Departments page." styleClass="small-muted" />
+                    </VBox>
+                </HBox>
+            </VBox>
+        </StackPane>
+    </center>
+</BorderPane>
