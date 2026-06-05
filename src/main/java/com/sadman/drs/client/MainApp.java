@@ -14,15 +14,13 @@ public class MainApp extends Application {
 
 @Override
 public void start(Stage stage) throws IOException {
-    FXMLLoader loader = new FXMLLoader(MainApp.class.getResource("/main.fxml"));
+        FXMLLoader loader = new FXMLLoader(MainApp.class.getResource("/login.fxml"));
 
-    Scene scene = new Scene(loader.load(), 1450, 900);
+        Scene scene = new Scene(loader.load(), 700, 520);
 
-    scene.getStylesheets().add(MainApp.class.getResource("/style.css").toExternalForm());
+        scene.getStylesheets().add(MainApp.class.getResource("/style.css").toExternalForm());
 
-    stage.setTitle("DRS - Disaster Response System");
-    stage.setScene(scene);
-
+        stage.setTitle("DRS Login - Disaster Response System");
     // Minimum size to stop the UI/table from becoming too compressed
     stage.setMinWidth(1300);
     stage.setMinHeight(800);

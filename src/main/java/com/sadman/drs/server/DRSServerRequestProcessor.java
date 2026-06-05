@@ -6,7 +6,9 @@ import com.sadman.drs.model.DisasterReport;
 import com.sadman.drs.model.Resource;
 import com.sadman.drs.model.ResourceAllocation;
 import com.sadman.drs.model.ResponseTask;
+import com.sadman.drs.model.User;
 import com.sadman.drs.protocol.AllocateResourceRequest;
+import com.sadman.drs.protocol.AuthenticationRequest;
 import com.sadman.drs.protocol.AssessmentRequest;
 import com.sadman.drs.protocol.AssessmentResponse;
 import com.sadman.drs.protocol.CheckDuplicateRequest;
@@ -17,11 +19,13 @@ import com.sadman.drs.protocol.ServerRequest;
 import com.sadman.drs.protocol.ServerResponse;
 import com.sadman.drs.protocol.UpdateReportStatusRequest;
 import com.sadman.drs.protocol.UpdateTaskStatusRequest;
+import com.sadman.drs.protocol.UserRegistrationRequest;
 import com.sadman.drs.server.repository.AssessmentRepository;
 import com.sadman.drs.server.repository.DepartmentRepository;
 import com.sadman.drs.server.repository.DisasterReportRepository;
 import com.sadman.drs.server.repository.ResourceRepository;
 import com.sadman.drs.server.repository.ResponseTaskRepository;
+import com.sadman.drs.server.repository.UserRepository;
 import com.sadman.drs.server.service.DepartmentCoordinationService;
 import com.sadman.drs.server.service.DisasterAssessmentService;
 import com.sadman.drs.server.service.DuplicateReportService;
@@ -38,6 +42,7 @@ public class DRSServerRequestProcessor {
     private final DepartmentRepository departmentRepository = new DepartmentRepository();
     private final ResponseTaskRepository responseTaskRepository = new ResponseTaskRepository();
     private final ResourceRepository resourceRepository = new ResourceRepository();
+    private final UserRepository userRepository = new UserRepository();
 
     private final DisasterAssessmentService assessmentService = new DisasterAssessmentService();
     private final EvacuationAdviceService evacuationAdviceService = new EvacuationAdviceService();
@@ -46,14 +51,105 @@ public class DRSServerRequestProcessor {
     private final DepartmentCoordinationService departmentCoordinationService =
             new DepartmentCoordinationService(departmentRepository, responseTaskRepository);
 
-    public ServerResponse processRequest(ServerRequest request) {
+    private boolean isAuthenticated(User currentUser) {
+        return currentUser != null;
+    }
+
+    private boolean isAuthorized(User currentUser, ServerAction action) {
+        if (currentUser == null) {
+            return false;
+        }
+        String role = currentUser.getRole();
+        if ("ADMIN".equals(role)) {
+            return true;
+        }
+        if ("RESPONDER".equals(role)) {
+            switch (action) {
+                case PING:
+                case AUTHENTICATE:
+                case SUBMIT_REPORT:
+                case FETCH_REPORTS:
+                case SEARCH_REPORTS:
+                case CHECK_DUPLICATE:
+                case SAVE_ASSESSMENT:
+                case FETCH_ASSESSMENTS:
+                case FETCH_TASKS:
+                case FETCH_RESOURCES:
+                case FETCH_ALLOCATIONS:
+                case CREATE_RESPONSE_TASK:
+                case UPDATE_TASK_STATUS:
+                case FETCH_TASKS_BY_REPORT:
+                case RECOMMEND_RESOURCES:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        if ("VIEWER".equals(role)) {
+            switch (action) {
+                case PING:
+                case AUTHENTICATE:
+                case FETCH_REPORTS:
+                case SEARCH_REPORTS:
+                case FETCH_ASSESSMENTS:
+                case FETCH_DEPARTMENTS:
+                case FETCH_TASKS:
+                case FETCH_RESOURCES:
+                case FETCH_ALLOCATIONS:
+                case FETCH_TASKS_BY_REPORT:
+                case RECOMMEND_RESOURCES:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        return false;
+    }
+
+    private ServerResponse handleAuthentication(Object payload) throws SQLException {
+        if (!(payload instanceof AuthenticationRequest request)) {
+            return ServerResponse.failure("Invalid authentication payload.");
+        }
+        User user = userRepository.authenticate(request.getUsername(), request.getPassword());
+        if (user == null) {
+            return ServerResponse.failure("Username or password is invalid.");
+        }
+        return ServerResponse.success("Authentication successful", user);
+    }
+
+    private ServerResponse handleUserRegistration(Object payload) throws SQLException {
+        if (!(payload instanceof UserRegistrationRequest request)) {
+            return ServerResponse.failure("Invalid registration payload.");
+        }
+        try {
+            User newUser = userRepository.registerUser(request.getUsername(), request.getPassword(), request.getRole());
+            if (newUser == null) {
+                return ServerResponse.failure("Username already exists.");
+            }
+            return ServerResponse.success("Registration successful", newUser);
+        } catch (IllegalArgumentException exception) {
+            return ServerResponse.failure(exception.getMessage());
+        }
+    }
+
+    public ServerResponse processRequest(ServerRequest request, User currentUser) {
         if (request == null || request.getAction() == null) {
             return ServerResponse.failure("Invalid request received.");
         }
 
         try {
+            if (request.getAction() != ServerAction.AUTHENTICATE && request.getAction() != ServerAction.REGISTER_USER && !isAuthenticated(currentUser)) {
+                return ServerResponse.failure("Authentication required. Please login first.");
+            }
+
+            if (request.getAction() != ServerAction.AUTHENTICATE && request.getAction() != ServerAction.REGISTER_USER && !isAuthorized(currentUser, request.getAction())) {
+                return ServerResponse.failure("Access denied. Your role does not permit this action.");
+            }
+
             return switch (request.getAction()) {
                 case PING -> ServerResponse.success("PONG", null);
+                case AUTHENTICATE -> handleAuthentication(request.getPayload());
+                case REGISTER_USER -> handleUserRegistration(request.getPayload());
                 case SUBMIT_REPORT -> handleSubmitReport(request.getPayload());
                 case FETCH_REPORTS -> ServerResponse.success("Reports fetched", disasterReportRepository.findAll());
                 case SEARCH_REPORTS -> handleSearchReports(request.getPayload());

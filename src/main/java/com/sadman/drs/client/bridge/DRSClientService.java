@@ -6,6 +6,8 @@ import com.sadman.drs.model.DisasterReport;
 import com.sadman.drs.model.Resource;
 import com.sadman.drs.model.ResourceAllocation;
 import com.sadman.drs.model.ResponseTask;
+import com.sadman.drs.model.User;
+import com.sadman.drs.model.User;
 import com.sadman.drs.protocol.AllocateResourceRequest;
 import com.sadman.drs.protocol.AssessmentRequest;
 import com.sadman.drs.protocol.AssessmentResponse;
@@ -17,6 +19,7 @@ import com.sadman.drs.protocol.ServerRequest;
 import com.sadman.drs.protocol.ServerResponse;
 import com.sadman.drs.protocol.UpdateReportStatusRequest;
 import com.sadman.drs.protocol.UpdateTaskStatusRequest;
+import com.sadman.drs.protocol.UserRegistrationRequest;
 
 import java.io.IOException;
 import java.util.List;
@@ -38,6 +41,26 @@ public class DRSClientService implements AutoCloseable {
         ensureConnected();
         ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.PING, null));
         return response.isSuccess();
+    }
+
+    public User authenticate(String username, String password) throws IOException, ClassNotFoundException {
+        ensureConnected();
+        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.AUTHENTICATE,
+                new com.sadman.drs.protocol.AuthenticationRequest(username, password)));
+        if (!response.isSuccess()) {
+            return null;
+        }
+        return (User) response.getPayload();
+    }
+
+    public User registerUser(String username, String password, String role) throws IOException, ClassNotFoundException {
+        ensureConnected();
+        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.REGISTER_USER,
+                new com.sadman.drs.protocol.UserRegistrationRequest(username, password, role)));
+        if (!response.isSuccess()) {
+            return null;
+        }
+        return (User) response.getPayload();
     }
 
     public DisasterReport submitReport(DisasterReport report) throws IOException, ClassNotFoundException {

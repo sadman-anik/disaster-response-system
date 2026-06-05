@@ -1,5 +1,7 @@
 package com.sadman.drs.server.config;
 
+import com.sadman.drs.server.repository.UserRepository;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
@@ -135,7 +137,19 @@ public final class DatabaseConnection {
                             ON DELETE RESTRICT
                     )
                     """);
+
+            statement.executeUpdate(""
+                    + "CREATE TABLE IF NOT EXISTS users ("
+                    + "user_id INT AUTO_INCREMENT PRIMARY KEY, "
+                    + "username VARCHAR(80) NOT NULL UNIQUE, "
+                    + "role VARCHAR(40) NOT NULL, "
+                    + "password_hash VARCHAR(255) NOT NULL, "
+                    + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+                    + ")"
+                    + "");
         }
+
+        new UserRepository().createDefaultUsers();
     }
 
     private static void ensureColumnExists(Connection connection, String tableName, String columnName,

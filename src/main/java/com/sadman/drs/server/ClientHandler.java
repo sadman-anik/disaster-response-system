@@ -1,7 +1,6 @@
 package com.sadman.drs.server;
 
-import com.sadman.drs.protocol.ServerAction;
-import com.sadman.drs.protocol.ServerRequest;
+import com.sadman.drs.protocol.ServerAction;import com.sadman.drs.model.User;import com.sadman.drs.protocol.ServerRequest;
 import com.sadman.drs.protocol.ServerResponse;
 import com.sadman.drs.security.CryptoUtils;
 import com.sadman.drs.server.DRSServerRequestProcessor;
@@ -21,10 +20,15 @@ import java.net.Socket;
  */
 public class ClientHandler implements Runnable {
     private final Socket clientSocket;
+    private User authenticatedUser;
     private final DRSServerRequestProcessor requestProcessor = new DRSServerRequestProcessor();
 
     public ClientHandler(Socket clientSocket) {
         this.clientSocket = clientSocket;
+    }
+
+    private void setAuthenticatedUser(User authenticatedUser) {
+        this.authenticatedUser = authenticatedUser;
     }
 
     @Override
@@ -38,7 +42,10 @@ public class ClientHandler implements Runnable {
             while (!clientSocket.isClosed()) {
                 try {
                     ServerRequest request = (ServerRequest) inputStream.readObject();
-                    ServerResponse response = requestProcessor.processRequest(request);
+                    ServerResponse response = requestProcessor.processRequest(request, authenticatedUser);
+                    if (request.getAction() == ServerAction.AUTHENTICATE && response.isSuccess() && response.getPayload() instanceof User user) {
+                        setAuthenticatedUser(user);
+                    }
                     outputStream.writeObject(response);
                     outputStream.flush();
                 } catch (EOFException eofException) {

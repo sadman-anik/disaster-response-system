@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 
 <BorderPane xmlns="http://javafx.com/javafx/17.0.10" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.sadman.drs.controller.ui.MainController" styleClass="root-pane">
+            fx:controller="com.sadman.drs.controller.MainController" styleClass="root-pane">
 
     <left>
         <VBox spacing="12" styleClass="sidebar" prefWidth="250">
@@ -16,13 +16,13 @@
             <Label text="DRS" styleClass="app-title" />
             <Label text="Disaster Response System" styleClass="app-subtitle" />
             <Separator />
-            <Button text="Dashboard" onAction="#showDashboard" styleClass="nav-button" />
-            <Button text="Report Disaster" onAction="#showReportDisaster" styleClass="nav-button" />
-            <Button text="Assess Report" onAction="#showAssessment" styleClass="nav-button" />
-            <Button text="Department Task" onAction="#showCoordination" styleClass="nav-button" />
-            <Button text="Update Task Status" onAction="#showDepartments" styleClass="nav-button" />
-            <Button text="Manage Resources" onAction="#showResources" styleClass="nav-button" />
-            <Button text="Report Status" onAction="#showReports" styleClass="nav-button" />
+            <Button fx:id="dashboardButton" text="Dashboard" onAction="#showDashboard" styleClass="nav-button" />
+            <Button fx:id="reportButton" text="Report Disaster" onAction="#showReportDisaster" styleClass="nav-button" />
+            <Button fx:id="assessmentButton" text="Assess Report" onAction="#showAssessment" styleClass="nav-button" />
+            <Button fx:id="coordinationButton" text="Department Task" onAction="#showCoordination" styleClass="nav-button" />
+            <Button fx:id="departmentsButton" text="Update Task Status" onAction="#showDepartments" styleClass="nav-button" />
+            <Button fx:id="resourcesButton" text="Manage Resources" onAction="#showResources" styleClass="nav-button" />
+            <Button fx:id="reportsButton" text="Report Status" onAction="#showReports" styleClass="nav-button" />
             <Region VBox.vgrow="ALWAYS" />
             <Label text="Storage: MySQL" styleClass="small-muted" />
             <Label fx:id="databaseStatusLabel" text="Checking database..." styleClass="status-pill" />
@@ -36,6 +36,7 @@
             </padding>
             <Label fx:id="pageTitleLabel" text="Dashboard" styleClass="page-title" />
             <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="userStatusLabel" text="Not logged in" styleClass="user-status-label" />
             <Button text="Refresh All" onAction="#refreshAllData" styleClass="secondary-button" />
         </HBox>
     </top>
