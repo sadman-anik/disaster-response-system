@@ -23,6 +23,7 @@
             <Button fx:id="departmentsButton" text="Update Task Status" onAction="#showDepartments" styleClass="nav-button" />
             <Button fx:id="resourcesButton" text="Manage Resources" onAction="#showResources" styleClass="nav-button" />
             <Button fx:id="reportsButton" text="Report Status" onAction="#showReports" styleClass="nav-button" />
+            <Button fx:id="auditButton" text="Audit Logs" onAction="#showAuditLogs" styleClass="nav-button" />
             <Region VBox.vgrow="ALWAYS" />
             <Label text="Storage: MySQL" styleClass="small-muted" />
             <Label fx:id="databaseStatusLabel" text="Checking database..." styleClass="status-pill" />
@@ -304,15 +305,51 @@
                         <Label text="Selected Report Details" styleClass="section-title" />
                         <TextArea fx:id="reportDetailsArea" editable="false" wrapText="true" prefRowCount="12" VBox.vgrow="ALWAYS" />
                         <Separator />
-                        <Label text="Update Report Workflow Status" styleClass="section-title" />
-                        <ComboBox fx:id="reportStatusComboBox" promptText="Choose report status" prefWidth="320" />
-                        <HBox spacing="8">
-                            <Button text="Update Status" onAction="#updateSelectedReportStatus" styleClass="secondary-button" />
-                            <Button text="Mark Assessed" onAction="#markSelectedReportAssessed" styleClass="secondary-button" />
-                            <Button text="Complete Report" onAction="#completeSelectedReport" styleClass="primary-button" />
-                        </HBox>
+                        <VBox fx:id="reportStatusUpdatePane" spacing="10">
+                            <Label text="Update Report Workflow Status" styleClass="section-title" />
+                            <ComboBox fx:id="reportStatusComboBox" promptText="Choose report status" prefWidth="320" />
+                            <HBox spacing="8">
+                                <Button text="Update Status" onAction="#updateSelectedReportStatus" styleClass="secondary-button" />
+                                <Button text="Mark Assessed" onAction="#markSelectedReportAssessed" styleClass="secondary-button" />
+                                <Button text="Complete Report" onAction="#completeSelectedReport" styleClass="primary-button" />
+                            </HBox>
+                        </VBox>
                         <Separator />
                         <Label text="Task workflow updates are managed from the Departments page." styleClass="small-muted" />
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <VBox fx:id="auditPane" spacing="18" visible="false" managed="false">
+                <HBox spacing="18">
+                    <VBox styleClass="card" spacing="12" HBox.hgrow="ALWAYS">
+                        <Label text="Audit Log Search" styleClass="section-title" />
+                        <HBox spacing="10">
+                            <TextField fx:id="auditSearchField" promptText="Search audit actions, users, entities..." HBox.hgrow="ALWAYS" />
+                            <Button text="Search" onAction="#searchAuditRecords" styleClass="secondary-button" />
+                        </HBox>
+                        <TableView fx:id="auditTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="auditIdColumn" text="ID" prefWidth="55" />
+                                <TableColumn fx:id="auditWhenColumn" text="When" prefWidth="170" />
+                                <TableColumn fx:id="auditUserColumn" text="User" prefWidth="120" />
+                                <TableColumn fx:id="auditActionColumn" text="Action" prefWidth="140" />
+                                <TableColumn fx:id="auditEntityTypeColumn" text="Entity Type" prefWidth="110" />
+                                <TableColumn fx:id="auditEntityLabelColumn" text="Entity Label" prefWidth="180" />
+                                <TableColumn fx:id="auditDetailsColumn" text="Details" prefWidth="220" />
+                            </columns>
+                        </TableView>
+                    </VBox>
+                    <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS">
+                        <Label text="Audit Summary" styleClass="section-title" />
+                        <BarChart fx:id="auditActionChart" legendVisible="false" animated="false" VBox.vgrow="ALWAYS">
+                            <xAxis>
+                                <CategoryAxis label="Audit Action" />
+                            </xAxis>
+                            <yAxis>
+                                <NumberAxis label="Event Count" />
+                            </yAxis>
+                        </BarChart>
                     </VBox>
                 </HBox>
             </VBox>

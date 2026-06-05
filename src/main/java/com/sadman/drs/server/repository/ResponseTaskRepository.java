@@ -96,6 +96,26 @@ public class ResponseTaskRepository {
         return tasks;
     }
 
+    public ResponseTask findById(int taskId) throws SQLException {
+        String sql = """
+                SELECT rt.*, d.department_name, dr.report_title
+                FROM response_tasks rt
+                JOIN departments d ON rt.department_id = d.department_id
+                JOIN disaster_reports dr ON rt.report_id = dr.report_id
+                WHERE rt.task_id = ?
+                """;
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, taskId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return mapResultSet(resultSet);
+                }
+            }
+        }
+        return null;
+    }
+
     public void updateStatus(int taskId, String status) throws SQLException {
         String sql = "UPDATE response_tasks SET status = ? WHERE task_id = ?";
         try (Connection connection = DatabaseConnection.getConnection();

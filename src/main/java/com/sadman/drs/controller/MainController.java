@@ -12,6 +12,7 @@ import com.sadman.drs.model.User;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.chart.BarChart;
@@ -40,6 +41,7 @@ public class MainController {
     @FXML private VBox departmentsPane;
     @FXML private VBox resourcesPane;
     @FXML private VBox reportsPane;
+    @FXML private VBox auditPane;
 
     @FXML private Label totalReportsLabel;
     @FXML private Label criticalReportsLabel;
@@ -59,6 +61,7 @@ public class MainController {
     @FXML private Button departmentsButton;
     @FXML private Button resourcesButton;
     @FXML private Button reportsButton;
+    @FXML private Button auditButton;
     @FXML private TextField locationField;
     @FXML private TextField reportedByField;
     @FXML private TextField contactNumberField;
@@ -138,9 +141,21 @@ public class MainController {
     @FXML private TableColumn<DisasterReport, String> reportPriorityColumn;
     @FXML private TableColumn<DisasterReport, String> reportStatusColumn;
     @FXML private TextArea reportDetailsArea;
+    @FXML private VBox reportStatusUpdatePane;
     @FXML private ComboBox<String> reportStatusComboBox;
     @FXML private ComboBox<ResponseTask> reportTaskComboBox;
     @FXML private ComboBox<String> reportTaskStatusComboBox;
+
+    @FXML private TextField auditSearchField;
+    @FXML private TableView<AuditRecord> auditTable;
+    @FXML private TableColumn<AuditRecord, Integer> auditIdColumn;
+    @FXML private TableColumn<AuditRecord, String> auditWhenColumn;
+    @FXML private TableColumn<AuditRecord, String> auditUserColumn;
+    @FXML private TableColumn<AuditRecord, String> auditActionColumn;
+    @FXML private TableColumn<AuditRecord, String> auditEntityTypeColumn;
+    @FXML private TableColumn<AuditRecord, String> auditEntityLabelColumn;
+    @FXML private TableColumn<AuditRecord, String> auditDetailsColumn;
+    @FXML private BarChart<String, Number> auditActionChart;
 
     private DRSClientService clientService;
     private final ReportValidationService reportValidationService = new ReportValidationService();
@@ -200,6 +215,16 @@ public class MainController {
                 reportTable,
                 reportStatusComboBox,
                 this::showSelectedReportDetails);
+
+        if (auditTable != null) {
+            auditIdColumn.setCellValueFactory(new PropertyValueFactory<>("auditId"));
+            auditWhenColumn.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
+            auditUserColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
+            auditActionColumn.setCellValueFactory(new PropertyValueFactory<>("actionType"));
+            auditEntityTypeColumn.setCellValueFactory(new PropertyValueFactory<>("entityType"));
+            auditEntityLabelColumn.setCellValueFactory(new PropertyValueFactory<>("entityLabel"));
+            auditDetailsColumn.setCellValueFactory(new PropertyValueFactory<>("changeDetails"));
+        }
 
         initializeDuplicateCheckWorkflow();
     }
@@ -313,9 +338,15 @@ public class MainController {
                 resourceReportComboBox);
     }
 
+    @FXML
+    private void showAuditLogs() {
+        setVisiblePane(auditPane, "Audit Logs");
+        refreshAuditData();
+    }
+
     private void setVisiblePane(VBox activePane, String title) {
         List<VBox> panes = List.of(dashboardPane, reportPane, assessmentPane, coordinationPane,
-                departmentsPane, resourcesPane, reportsPane);
+departmentsPane, resourcesPane, reportsPane, auditPane);
         for (VBox pane : panes) {
             boolean visible = pane == activePane;
             pane.setVisible(visible);
@@ -589,6 +620,41 @@ public class MainController {
     }
 
     @FXML
+    private void searchAuditRecords() {
+        loadAuditRecords(auditSearchField == null ? "" : auditSearchField.getText());
+    }
+
+    private void refreshAuditData() {
+        loadAuditRecords(auditSearchField == null ? "" : auditSearchField.getText());
+    }
+
+    private void loadAuditRecords(String keyword) {
+        try {
+            List<AuditRecord> auditRecords = isBlank(keyword)
+                    ? clientService.findAllAuditEvents()
+                    : clientService.searchAuditEvents(keyword.trim());
+            auditTable.setItems(FXCollections.observableArrayList(auditRecords));
+            updateAuditCharts(auditRecords);
+        } catch (IOException | ClassNotFoundException exception) {
+            showError("Audit Refresh Error", exception.getMessage());
+        }
+    }
+
+    private void updateAuditCharts(List<AuditRecord> auditRecords) {
+        if (auditActionChart == null) {
+            return;
+        }
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        auditRecords.stream()
+                .collect(Collectors.groupingBy(AuditRecord::getActionType, Collectors.counting()))
+                .entrySet().stream()
+                .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
+                .forEach(entry -> series.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue())));
+
+        auditActionChart.getData().setAll(series);
+    }
+
+    @FXML
     private void updateSelectedReportStatus() {
         DisasterReport selectedReport = reportTable.getSelectionModel().getSelectedItem();
         String status = getValue(reportStatusComboBox);
@@ -804,24 +870,35 @@ public class MainController {
                 taskReportComboBox,
                 resourceReportComboBox);
 
-        UiDataRefresher.refreshAssessmentData(clientService,
-                assessmentTable,
-                assessmentReportComboBox);
+        String role = currentUser == null ? "" : currentUser.getRole();
 
-        UiDataRefresher.refreshCoordinationData(clientService,
-                taskReportComboBox,
-                taskDepartmentComboBox,
-                taskTable);
+        if (canAssess(role)) {
+            UiDataRefresher.refreshAssessmentData(clientService,
+                    assessmentTable,
+                    assessmentReportComboBox);
+            UiDataRefresher.refreshCoordinationData(clientService,
+                    taskReportComboBox,
+                    taskDepartmentComboBox,
+                    taskTable);
+        }
 
-        UiDataRefresher.refreshDepartmentData(clientService,
-                departmentTable,
-                departmentTaskTable);
+        if (canUpdateDepartmentTasks(role)) {
+            UiDataRefresher.refreshDepartmentData(clientService,
+                    departmentTable,
+                    departmentTaskTable);
+        }
 
-        UiDataRefresher.refreshResourceData(clientService,
-                resourceReportComboBox,
-                resourceComboBox,
-                resourceTable,
-                allocationTable);
+        if (canManageResources(role)) {
+            UiDataRefresher.refreshResourceData(clientService,
+                    resourceReportComboBox,
+                    resourceComboBox,
+                    resourceTable,
+                    allocationTable);
+        }
+
+        if (canViewAudit(role)) {
+            refreshAuditData();
+        }
     }
 
     private void showSelectedReportDetails(DisasterReport report) {
@@ -913,25 +990,55 @@ public class MainController {
         }
 
         String role = currentUser.getRole();
-        boolean canSubmitAndManage = "ADMIN".equals(role) || "RESPONDER".equals(role);
-        boolean canViewOnly = "VIEWER".equals(role);
+        boolean canUpdateReportStatus = hasAnyRole(role, "ADMIN");
 
-        reportButton.setDisable(canViewOnly);
-        assessmentButton.setDisable(!canSubmitAndManage);
-        coordinationButton.setDisable(!canSubmitAndManage);
-        departmentsButton.setDisable(!canSubmitAndManage);
-        resourcesButton.setDisable(!canSubmitAndManage);
+        dashboardButton.setDisable(false);
+        setButtonAvailable(reportButton, canReport(role));
+        setButtonAvailable(assessmentButton, canAssess(role));
+        setButtonAvailable(coordinationButton, canCoordinate(role));
+        setButtonAvailable(departmentsButton, canUpdateDepartmentTasks(role));
+        setButtonAvailable(resourcesButton, canManageResources(role));
+        setButtonAvailable(auditButton, canViewAudit(role));
         reportsButton.setDisable(false);
+        setButtonAvailable(reportStatusUpdatePane, canUpdateReportStatus);
+    }
 
-        if (canViewOnly) {
-            reportPane.setVisible(false);
-            reportPane.setManaged(false);
-            assessmentPane.setVisible(false);
-            assessmentPane.setManaged(false);
-            coordinationPane.setVisible(false);
-            coordinationPane.setManaged(false);
-            resourcesPane.setVisible(false);
-            resourcesPane.setManaged(false);
+    private boolean canReport(String role) {
+        return hasAnyRole(role, "ADMIN", "REPORTER");
+    }
+
+    private boolean canAssess(String role) {
+        return hasAnyRole(role, "ADMIN", "ASSESSMENT_OFFICER");
+    }
+
+    private boolean canCoordinate(String role) {
+        return hasAnyRole(role, "ADMIN", "ASSESSMENT_OFFICER");
+    }
+
+    private boolean canUpdateDepartmentTasks(String role) {
+        return hasAnyRole(role, "ADMIN", "DEPARTMENT_OFFICER");
+    }
+
+    private boolean canManageResources(String role) {
+        return hasAnyRole(role, "ADMIN", "RESOURCE_OFFICER");
+    }
+
+    private boolean canViewAudit(String role) {
+        return hasAnyRole(role, "ADMIN", "AUDITOR");
+    }
+
+    private boolean hasAnyRole(String role, String... allowedRoles) {
+        for (String allowedRole : allowedRoles) {
+            if (allowedRole.equals(role)) {
+                return true;
+            }
         }
+        return false;
+    }
+
+    private void setButtonAvailable(Node node, boolean available) {
+        node.setDisable(!available);
+        node.setVisible(available);
+        node.setManaged(available);
     }
 }

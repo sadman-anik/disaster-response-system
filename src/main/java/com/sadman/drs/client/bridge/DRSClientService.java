@@ -1,12 +1,12 @@
 package com.sadman.drs.client.bridge;
 
+import com.sadman.drs.model.AuditRecord;
 import com.sadman.drs.model.AssessmentResult;
 import com.sadman.drs.model.Department;
 import com.sadman.drs.model.DisasterReport;
 import com.sadman.drs.model.Resource;
 import com.sadman.drs.model.ResourceAllocation;
 import com.sadman.drs.model.ResponseTask;
-import com.sadman.drs.model.User;
 import com.sadman.drs.model.User;
 import com.sadman.drs.protocol.AllocateResourceRequest;
 import com.sadman.drs.protocol.AssessmentRequest;
@@ -214,6 +214,27 @@ public class DRSClientService implements AutoCloseable {
             throw new IllegalStateException(response.getMessage());
         }
         return (String) response.getPayload();
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<AuditRecord> findAllAuditEvents() throws IOException, ClassNotFoundException {
+        ensureConnected();
+        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.FETCH_AUDIT_EVENTS, null));
+        if (!response.isSuccess()) {
+            throw new IllegalStateException(response.getMessage());
+        }
+        return (List<AuditRecord>) response.getPayload();
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<AuditRecord> searchAuditEvents(String keyword) throws IOException, ClassNotFoundException {
+        ensureConnected();
+        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.SEARCH_AUDIT_EVENTS,
+                new com.sadman.drs.protocol.AuditSearchRequest(keyword)));
+        if (!response.isSuccess()) {
+            throw new IllegalStateException(response.getMessage());
+        }
+        return (List<AuditRecord>) response.getPayload();
     }
 
     private void ensureConnected() {

@@ -147,6 +147,19 @@ public final class DatabaseConnection {
                     + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
                     + ")"
                     + "");
+
+            statement.executeUpdate("""
+                    CREATE TABLE IF NOT EXISTS audit_events (
+                        audit_id INT AUTO_INCREMENT PRIMARY KEY,
+                        entity_type VARCHAR(60) NOT NULL,
+                        entity_id INT NOT NULL,
+                        entity_label VARCHAR(180) NOT NULL,
+                        action_type VARCHAR(80) NOT NULL,
+                        username VARCHAR(80) NOT NULL,
+                        change_details TEXT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                    """);
         }
 
         new UserRepository().createDefaultUsers();

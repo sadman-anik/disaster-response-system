@@ -5,6 +5,9 @@ package com.sadman.drs.model;
  */
 public enum UserRole {
     ADMIN,
-    RESPONDER,
-    VIEWER
+    REPORTER,
+    ASSESSMENT_OFFICER,
+    RESOURCE_OFFICER,
+    DEPARTMENT_OFFICER,
+    AUDITOR
 }

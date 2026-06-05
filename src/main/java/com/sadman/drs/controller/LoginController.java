@@ -32,10 +32,10 @@ public class LoginController {
 
     @FXML
     private void initialize() {
-        registerRoleComboBox.getItems().addAll("VIEWER", "RESPONDER");
+        registerRoleComboBox.getItems().addAll("REPORTER", "ASSESSMENT_OFFICER", "RESOURCE_OFFICER", "DEPARTMENT_OFFICER", "AUDITOR");
         registerRoleComboBox.getSelectionModel().selectFirst();
         loginStatusLabel.setText("Connecting to DRS server...");
-        registerStatusLabel.setText("Create a viewer or responder account.");
+        registerStatusLabel.setText("Create a REPORTER, ASSESSMENT_OFFICER, RESOURCE_OFFICER, DEPARTMENT_OFFICER, or AUDITOR account.");
 
         try {
             clientService.connect();

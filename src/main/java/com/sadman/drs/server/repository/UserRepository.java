@@ -55,20 +55,29 @@ public class UserRepository {
         if (findByUsername(username) != null) {
             return null;
         }
-        if (!"VIEWER".equals(role) && !"RESPONDER".equals(role)) {
-            throw new IllegalArgumentException("Role must be VIEWER or RESPONDER.");
+        if (!"REPORTER".equals(role)
+                && !"ASSESSMENT_OFFICER".equals(role)
+                && !"RESOURCE_OFFICER".equals(role)
+                && !"DEPARTMENT_OFFICER".equals(role)
+                && !"AUDITOR".equals(role)) {
+            throw new IllegalArgumentException("Role must be REPORTER, ASSESSMENT_OFFICER, RESOURCE_OFFICER, DEPARTMENT_OFFICER, or AUDITOR.");
         }
         return save(new User(username, role, hashPassword(password)));
     }
 
     public void createDefaultUsers() throws SQLException {
-        if (findByUsername("admin") != null) {
-            return;
-        }
+        createDefaultUserIfMissing("admin", "ADMIN", "Admin@123");
+        createDefaultUserIfMissing("reporter", "REPORTER", "Reporter@123");
+        createDefaultUserIfMissing("assessment_officer", "ASSESSMENT_OFFICER", "Assessment@123");
+        createDefaultUserIfMissing("resource_officer", "RESOURCE_OFFICER", "Resource@123");
+        createDefaultUserIfMissing("department_officer", "DEPARTMENT_OFFICER", "Department@123");
+        createDefaultUserIfMissing("auditor", "AUDITOR", "Auditor@123");
+    }
 
-        save(new User("admin", "ADMIN", hashPassword("Admin@123")));
-        save(new User("responder", "RESPONDER", hashPassword("Responder@123")));
-        save(new User("viewer", "VIEWER", hashPassword("Viewer@123")));
+    private void createDefaultUserIfMissing(String username, String role, String password) throws SQLException {
+        if (findByUsername(username) == null) {
+            save(new User(username, role, hashPassword(password)));
+        }
     }
 
     private User save(User user) throws SQLException {

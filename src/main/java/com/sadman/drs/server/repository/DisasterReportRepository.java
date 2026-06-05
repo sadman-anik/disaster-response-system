@@ -57,6 +57,20 @@ public class DisasterReportRepository {
         return reports;
     }
 
+    public DisasterReport findById(int reportId) throws SQLException {
+        String sql = "SELECT * FROM disaster_reports WHERE report_id = ?";
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, reportId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return mapResultSet(resultSet);
+                }
+            }
+        }
+        return null;
+    }
+
     public List<DisasterReport> search(String keyword) throws SQLException {
         String sql = """
                 SELECT * FROM disaster_reports
