@@ -2,6 +2,7 @@ package com.sadman.drs.controller.workflow;
 
 import com.sadman.drs.client.bridge.DRSClientService;
 import com.sadman.drs.controller.ui.AlertHelper;
+import com.sadman.drs.controller.validation.FormValueHelper;
 import com.sadman.drs.model.AssessmentResult;
 import com.sadman.drs.model.DisasterReport;
 import com.sadman.drs.model.ResponseTask;
@@ -50,13 +51,13 @@ public class AssessmentWorkflow {
 
     public void generateAssessment() {
         DisasterReport selectedReport = assessmentReportComboBox.getValue();
-        String damageLevel = getValue(damageLevelComboBox);
+        String damageLevel = FormValueHelper.getValue(damageLevelComboBox);
 
         if (selectedReport == null) {
             AlertHelper.showWarning("Select a disaster report to assess.");
             return;
         }
-        if (isBlank(damageLevel)) {
+        if (FormValueHelper.isBlank(damageLevel)) {
             AlertHelper.showWarning("Select damage level.");
             return;
         }
@@ -109,11 +110,4 @@ public class AssessmentWorkflow {
         }
     }
 
-    private String getValue(ComboBox<String> comboBox) {
-        return comboBox.getValue() == null ? "" : comboBox.getValue();
-    }
-
-    private boolean isBlank(String value) {
-        return value == null || value.trim().isEmpty();
-    }
 }

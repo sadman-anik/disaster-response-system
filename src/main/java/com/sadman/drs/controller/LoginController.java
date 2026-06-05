@@ -1,17 +1,19 @@
 package com.sadman.drs.controller;
 
 import com.sadman.drs.client.bridge.DRSClientService;
+import com.sadman.drs.controller.validation.FormValueHelper;
 import com.sadman.drs.model.User;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.Pane;
-import javafx.stage.Stage;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Controller for the login/register screen.
@@ -55,7 +57,7 @@ public class LoginController {
         String username = loginUsernameField.getText().trim();
         String password = loginPasswordField.getText();
 
-        if (username.isEmpty() || password.isEmpty()) {
+        if (FormValueHelper.isBlank(username) || FormValueHelper.isBlank(password)) {
             loginStatusLabel.setText("Username and password are required.");
             return;
         }
@@ -77,9 +79,10 @@ public class LoginController {
         String username = registerUsernameField.getText().trim();
         String password = registerPasswordField.getText();
         String confirmPassword = registerConfirmPasswordField.getText();
-        String role = registerRoleComboBox.getValue();
+        String role = FormValueHelper.getValue(registerRoleComboBox);
 
-        if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
+        if (FormValueHelper.isBlank(username) || FormValueHelper.isBlank(password)
+                || FormValueHelper.isBlank(confirmPassword)) {
             registerStatusLabel.setText("All registration fields are required.");
             return;
         }

@@ -3,6 +3,7 @@ package com.sadman.drs.controller.workflow;
 import com.sadman.drs.client.bridge.DRSClientService;
 import com.sadman.drs.controller.ui.AlertHelper;
 import com.sadman.drs.controller.ui.AuditViewHelper;
+import com.sadman.drs.controller.validation.FormValueHelper;
 import com.sadman.drs.model.AuditRecord;
 import javafx.collections.FXCollections;
 import javafx.scene.chart.BarChart;
@@ -42,7 +43,7 @@ public class AuditWorkflow {
 
     private void loadAuditRecords(String keyword) {
         try {
-            List<AuditRecord> auditRecords = isBlank(keyword)
+            List<AuditRecord> auditRecords = FormValueHelper.isBlank(keyword)
                     ? clientServiceSupplier.get().findAllAuditEvents()
                     : clientServiceSupplier.get().searchAuditEvents(keyword.trim());
             auditTable.setItems(FXCollections.observableArrayList(auditRecords));
@@ -52,7 +53,4 @@ public class AuditWorkflow {
         }
     }
 
-    private boolean isBlank(String value) {
-        return value == null || value.trim().isEmpty();
-    }
 }

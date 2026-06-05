@@ -3,6 +3,7 @@ package com.sadman.drs.controller.workflow;
 import com.sadman.drs.client.bridge.DRSClientService;
 import com.sadman.drs.controller.ui.AlertHelper;
 import com.sadman.drs.controller.ui.ViewFormatter;
+import com.sadman.drs.controller.validation.FormValueHelper;
 import com.sadman.drs.model.Department;
 import com.sadman.drs.model.DisasterReport;
 import com.sadman.drs.model.ResponseTask;
@@ -77,11 +78,12 @@ public class TaskWorkflow {
     public void createResponseTask() {
         DisasterReport report = taskReportComboBox.getValue();
         Department department = taskDepartmentComboBox.getValue();
-        String activityType = getValue(activityTypeComboBox);
-        String priority = getValue(taskPriorityComboBox);
+        String activityType = FormValueHelper.getValue(activityTypeComboBox);
+        String priority = FormValueHelper.getValue(taskPriorityComboBox);
         String description = taskDescriptionArea.getText();
 
-        if (report == null || department == null || isBlank(activityType) || isBlank(priority) || isBlank(description)) {
+        if (report == null || department == null || FormValueHelper.isBlank(activityType)
+                || FormValueHelper.isBlank(priority) || FormValueHelper.isBlank(description)) {
             AlertHelper.showWarning("Select report, department, activity, priority and enter task description.");
             return;
         }
@@ -102,12 +104,12 @@ public class TaskWorkflow {
 
     public void updateSelectedDepartmentTaskStatus() {
         ResponseTask selectedTask = departmentTaskTable.getSelectionModel().getSelectedItem();
-        String status = getValue(departmentTaskStatusComboBox);
+        String status = FormValueHelper.getValue(departmentTaskStatusComboBox);
         if (selectedTask == null) {
             AlertHelper.showWarning("Select a response task from the Departments page first.");
             return;
         }
-        if (isBlank(status)) {
+        if (FormValueHelper.isBlank(status)) {
             AlertHelper.showWarning("Select the new task status.");
             return;
         }
@@ -128,12 +130,12 @@ public class TaskWorkflow {
 
     public void updateSelectedReportTaskStatus() {
         ResponseTask selectedTask = reportTaskComboBox.getValue();
-        String status = getValue(reportTaskStatusComboBox);
+        String status = FormValueHelper.getValue(reportTaskStatusComboBox);
         if (selectedTask == null) {
             AlertHelper.showWarning("Select a response task for the selected report first.");
             return;
         }
-        if (isBlank(status)) {
+        if (FormValueHelper.isBlank(status)) {
             AlertHelper.showWarning("Select the new task status.");
             return;
         }
@@ -197,11 +199,4 @@ public class TaskWorkflow {
         }
     }
 
-    private String getValue(ComboBox<String> comboBox) {
-        return comboBox.getValue() == null ? "" : comboBox.getValue();
-    }
-
-    private boolean isBlank(String value) {
-        return value == null || value.trim().isEmpty();
-    }
 }

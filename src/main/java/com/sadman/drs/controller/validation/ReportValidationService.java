@@ -7,31 +7,27 @@ public class ReportValidationService {
 
     public String validateReport(String reportTitle, String disasterType, String severity, String location,
                                  String description, String reportedBy, String contactNumber) {
-        if (isBlank(reportTitle)) {
+        if (FormValueHelper.isBlank(reportTitle)) {
             return "Report title is required.";
         }
-        if (isBlank(disasterType)) {
+        if (FormValueHelper.isBlank(disasterType)) {
             return "Disaster type is required.";
         }
-        if (isBlank(severity)) {
+        if (FormValueHelper.isBlank(severity)) {
             return "Severity is required.";
         }
-        if (isBlank(location)) {
+        if (FormValueHelper.isBlank(location)) {
             return "Location is required.";
         }
-        if (isBlank(description)) {
+        if (FormValueHelper.isBlank(description)) {
             return "Description is required.";
         }
-        if (isBlank(reportedBy)) {
+        if (FormValueHelper.isBlank(reportedBy)) {
             return "Reporter name is required.";
         }
-        if (isBlank(contactNumber)) {
+        if (FormValueHelper.isBlank(contactNumber)) {
             return "Contact number is required.";
         }
         return null;
-    }
-
-    private boolean isBlank(String value) {
-        return value == null || value.trim().isEmpty();
     }
 }

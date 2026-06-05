@@ -3,6 +3,7 @@ package com.sadman.drs.controller.workflow;
 import com.sadman.drs.client.bridge.DRSClientService;
 import com.sadman.drs.controller.ui.AlertHelper;
 import com.sadman.drs.controller.ui.ViewFormatter;
+import com.sadman.drs.controller.validation.FormValueHelper;
 import com.sadman.drs.controller.validation.ReportValidationService;
 import com.sadman.drs.model.DisasterReport;
 import com.sadman.drs.model.ResponseTask;
@@ -77,8 +78,8 @@ public class ReportWorkflow {
 
     public void submitDisasterReport() {
         String reportTitle = reportTitleField.getText();
-        String disasterType = getValue(disasterTypeComboBox);
-        String severity = getValue(severityComboBox);
+        String disasterType = FormValueHelper.getValue(disasterTypeComboBox);
+        String severity = FormValueHelper.getValue(severityComboBox);
         String location = locationField.getText();
         String description = descriptionArea.getText();
         String reportedBy = reportedByField.getText();
@@ -124,14 +125,14 @@ public class ReportWorkflow {
     }
 
     public void checkDuplicateReport() {
-        String disasterType = getValue(disasterTypeComboBox);
+        String disasterType = FormValueHelper.getValue(disasterTypeComboBox);
         String location = locationField.getText();
 
-        if (isBlank(disasterType)) {
+        if (FormValueHelper.isBlank(disasterType)) {
             duplicateCheckWorkflow.blockSubmission("Please select disaster type first.");
             return;
         }
-        if (isBlank(location)) {
+        if (FormValueHelper.isBlank(location)) {
             duplicateCheckWorkflow.blockSubmission("Please enter location first.");
             return;
         }
@@ -152,7 +153,7 @@ public class ReportWorkflow {
         String keyword = searchField.getText();
 
         try {
-            List<DisasterReport> reports = isBlank(keyword)
+            List<DisasterReport> reports = FormValueHelper.isBlank(keyword)
                     ? clientServiceSupplier.get().findAllReports()
                     : clientServiceSupplier.get().searchReports(keyword.trim());
             reportTable.setItems(FXCollections.observableArrayList(reports));
@@ -163,12 +164,12 @@ public class ReportWorkflow {
 
     public void updateSelectedReportStatus() {
         DisasterReport selectedReport = reportTable.getSelectionModel().getSelectedItem();
-        String status = getValue(reportStatusComboBox);
+        String status = FormValueHelper.getValue(reportStatusComboBox);
         if (selectedReport == null) {
             AlertHelper.showWarning("Select a report from the Reports table first.");
             return;
         }
-        if (isBlank(status)) {
+        if (FormValueHelper.isBlank(status)) {
             AlertHelper.showWarning("Select the new report status.");
             return;
         }
@@ -252,11 +253,4 @@ public class ReportWorkflow {
         descriptionArea.clear();
     }
 
-    private String getValue(ComboBox<String> comboBox) {
-        return comboBox.getValue() == null ? "" : comboBox.getValue();
-    }
-
-    private boolean isBlank(String value) {
-        return value == null || value.trim().isEmpty();
-    }
 }
