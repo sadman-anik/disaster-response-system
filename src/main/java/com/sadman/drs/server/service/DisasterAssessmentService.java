@@ -1,4 +1,4 @@
-package com.sadman.drs.service;
+package com.sadman.drs.server.service;
 
 import com.sadman.drs.model.AssessmentResult;
 import com.sadman.drs.model.DisasterReport;

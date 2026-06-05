@@ -1,9 +1,11 @@
 package com.sadman.drs.model;
 
+import java.io.Serializable;
+
 /**
  * Model class for response activities such as evacuation, search and rescue, assistance, and restoration.
  */
-public class ResponseTask {
+public class ResponseTask implements Serializable {
     private int taskId;
     private int reportId;
     private String reportTitle;

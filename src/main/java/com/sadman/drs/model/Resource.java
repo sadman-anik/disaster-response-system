@@ -1,9 +1,11 @@
 package com.sadman.drs.model;
 
+import java.io.Serializable;
+
 /**
  * Model class for available emergency resources.
  */
-public class Resource {
+public class Resource implements Serializable {
     private int resourceId;
     private String resourceName;
     private String category;

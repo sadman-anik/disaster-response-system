@@ -1,9 +1,11 @@
 package com.sadman.drs.model;
 
+import java.io.Serializable;
+
 /**
  * Model class that stores the main disaster report details.
  */
-public class DisasterReport {
+public class DisasterReport implements Serializable {
     private int reportId;
     private String reportTitle;
     private String disasterType;

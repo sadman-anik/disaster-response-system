@@ -4,7 +4,11 @@
 
 DRS is a JavaFX desktop application developed for disaster response prototype that allows users to report disasters, assess disaster severity, generate prioritised responses, coordinate departments, manage response tasks, recommend resources, allocate resources, and track response progress.
 
-The application follows the MVC architecture and uses MySQL for persistent data storage. It was developed using Visual Studio Code, Maven, JDK 17, JavaFX, and MySQL.
+The application follows the MVC architecture and uses MySQL for persistent data storage. It includes a client/server design where the JavaFX client uses `DRSClientService` to send requests to a server-side request processor, and the server layer handles business logic and database access.
+
+UI responsibilities are separated from view formatting and control setup using helper classes such as `ComboBoxInitializer`, `TableSetupHelper`, `UiDataRefresher`, and `ViewFormatter`.
+
+It was developed using Visual Studio Code, Maven, JDK 17, JavaFX, and MySQL.
 
 ---
 
@@ -23,6 +27,29 @@ The application follows the MVC architecture and uses MySQL for persistent data 
 | Visual Studio Code | IDE used for development |
 
 ---
+
+## Project Structure
+
+The code is organised into logical packages:
+
+- `com.sadman.drs.client` - client-side networking and server communication wrapper
+- `com.sadman.drs.controller` - JavaFX UI controller and view helper classes
+- `com.sadman.drs.model` - domain objects such as `DisasterReport`, `ResponseTask`, and `Resource`
+- `com.sadman.drs.protocol` - shared request/response transport classes for socket communication
+- `com.sadman.drs.server` - server-side request processing, services, and repositories that access MySQL
+
+This separation keeps the JavaFX UI layer separate from networking, transport, and backend logic.
+
+## Example Client → Server → Client Flow
+
+1. The JavaFX controller builds a `DisasterReport` object from the report form.
+2. `DRSClientService.submitReport(report)` wraps it in a `ServerRequest` with `ServerAction.SUBMIT_REPORT`.
+3. `DRSClient` sends that request to the server over the socket connection.
+4. `DRSServerRequestProcessor.processRequest(request)` receives the request on the server.
+5. `handleSubmitReport(request.getPayload())` extracts the `DisasterReport` payload and saves it to the database.
+6. The server returns `ServerResponse.success("Report submitted", savedReport)`.
+7. The client receives the response and `DRSClientService.submitReport(...)` returns the saved `DisasterReport` back to the controller.
+8. The controller updates the UI with the saved report details.
 
 ## Main Features
 
@@ -329,15 +356,23 @@ Open the project folder in Visual Studio Code.
 
 Make sure MySQL Server is running.
 
-Then run this command from the project root:
+You can run the app directly with Maven from the project root:
 
 ```bash
 mvn clean javafx:run
 ```
 
+Or use the provided script:
+
+```bash
+./run.sh
+```
+
 The application will start as a JavaFX desktop application.
 
 During startup, the system connects to MySQL and automatically prepares the required database and tables if they do not already exist.
+
+The `run.sh` script performs environment checks for Java and Maven before launching the application.
 
 ---
 
@@ -345,13 +380,19 @@ During startup, the system connects to MySQL and automatically prepares the requ
 
 The project includes JUnit tests for important service logic, including creative feature logic.
 
-Run tests using:
+Run tests using Maven:
 
 ```bash
 mvn test
 ```
 
-JUnit testing is included to support test-driven development and verify important system behaviours.
+Or use the provided script:
+
+```bash
+./test.sh
+```
+
+The `test.sh` script performs environment checks for Java and Maven before running the test suite.
 
 ---
 

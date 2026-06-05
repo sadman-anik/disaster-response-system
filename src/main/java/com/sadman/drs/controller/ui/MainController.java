@@ -1,9 +1,9 @@
-package com.sadman.drs.controller;
+package com.sadman.drs.controller.ui;
 
-import com.sadman.drs.config.DatabaseConnection;
+import com.sadman.drs.client.bridge.DRSClientService;
+import com.sadman.drs.controller.validation.ReportValidationService;
 import com.sadman.drs.model.*;
-import com.sadman.drs.repository.*;
-import com.sadman.drs.service.*;
+import com.sadman.drs.protocol.AssessmentRequest;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -14,7 +14,7 @@ import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.layout.VBox;
 
-import java.sql.SQLException;
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -128,38 +128,85 @@ public class MainController {
     @FXML private ComboBox<ResponseTask> reportTaskComboBox;
     @FXML private ComboBox<String> reportTaskStatusComboBox;
 
-    private final DisasterReportRepository disasterReportRepository = new DisasterReportRepository();
-    private final AssessmentRepository assessmentRepository = new AssessmentRepository();
-    private final DepartmentRepository departmentRepository = new DepartmentRepository();
-    private final ResponseTaskRepository responseTaskRepository = new ResponseTaskRepository();
-    private final ResourceRepository resourceRepository = new ResourceRepository();
-
-    private final DisasterAssessmentService assessmentService = new DisasterAssessmentService();
-    private final EvacuationAdviceService evacuationAdviceService = new EvacuationAdviceService();
-    private final ResourceRecommendationService resourceRecommendationService = new ResourceRecommendationService();
+    private final DRSClientService clientService = new DRSClientService();
     private final ReportValidationService reportValidationService = new ReportValidationService();
-    private final DuplicateReportService duplicateReportService = new DuplicateReportService(disasterReportRepository);
-    private final DepartmentCoordinationService departmentCoordinationService =
-            new DepartmentCoordinationService(departmentRepository, responseTaskRepository);
 
     @FXML
     private void initialize() {
-        initializeComboBoxes();
-        initializeTables();
+        ComboBoxInitializer.initializeComboBoxes(
+                disasterTypeComboBox,
+                severityComboBox,
+                damageLevelComboBox,
+                activityTypeComboBox,
+                taskPriorityComboBox,
+                reportStatusComboBox,
+                reportTaskStatusComboBox,
+                departmentTaskStatusComboBox);
+
+        TableSetupHelper.initializeTables(
+                assessmentIdColumn,
+                assessmentReportIdColumn,
+                assessmentDamageColumn,
+                assessmentPeopleColumn,
+                assessmentScoreColumn,
+                assessmentPriorityColumn,
+                taskIdColumn,
+                taskReportIdColumn,
+                taskDepartmentColumn,
+                taskActivityColumn,
+                taskPriorityColumn,
+                taskStatusColumn,
+                departmentIdColumn,
+                departmentNameColumn,
+                departmentServiceColumn,
+                departmentContactColumn,
+                departmentStatusColumn,
+                departmentTaskTable,
+                departmentTaskStatusComboBox,
+                departmentTaskIdColumn,
+                departmentTaskReportColumn,
+                departmentTaskDepartmentColumn,
+                departmentTaskActivityColumn,
+                departmentTaskPriorityColumn,
+                departmentTaskStatusColumn,
+                resourceIdColumn,
+                resourceNameColumn,
+                resourceCategoryColumn,
+                resourceQuantityColumn,
+                allocationIdColumn,
+                allocationReportIdColumn,
+                allocationResourceColumn,
+                allocationQuantityColumn,
+                reportDisplayColumn,
+                reportTypeColumn,
+                reportSeverityColumn,
+                reportLocationColumn,
+                reportPriorityColumn,
+                reportStatusColumn,
+                reportTable,
+                reportStatusComboBox,
+                this::showSelectedReportDetails);
+
         initializeDuplicateCheckWorkflow();
 
         try {
-            DatabaseConnection.initializeDatabase();
-            departmentRepository.seedDefaultDepartments();
-            resourceRepository.seedDefaultResources();
-            databaseStatusLabel.setText("MySQL connected");
+            initializeServerConnection();
+            databaseStatusLabel.setText("DRS server available");
             refreshAllData();
             showDashboard();
-        } catch (SQLException | RuntimeException exception) {
-            databaseStatusLabel.setText("Database error");
-            showError("Database Connection Error",
-                    "Could not connect to MySQL. Check database.properties, MySQL server, username and password.\n\n"
+        } catch (IOException | ClassNotFoundException exception) {
+            databaseStatusLabel.setText("Server unavailable");
+            showError("Server Connection Error",
+                    "Could not connect to the DRS server. Start the server before launching the client.\n\n"
                             + exception.getMessage());
+        }
+    }
+
+    private void initializeServerConnection() throws IOException, ClassNotFoundException {
+        clientService.connect();
+        boolean serverAlive = clientService.pingServer();
+        if (!serverAlive) {
+            throw new IllegalStateException("DRS server did not respond to ping.");
         }
     }
 
@@ -198,90 +245,18 @@ public class MainController {
         duplicateWarningLabel.getStyleClass().add(styleClass);
     }
 
-    private void initializeComboBoxes() {
-        disasterTypeComboBox.setItems(FXCollections.observableArrayList(
-                "Fire", "Flood", "Earthquake", "Hurricane", "Storm", "Chemical Spill", "Other"));
-        severityComboBox.setItems(FXCollections.observableArrayList("Low", "Medium", "High", "Critical"));
-        damageLevelComboBox.setItems(FXCollections.observableArrayList("Minor", "Moderate", "Major", "Severe"));
-        activityTypeComboBox.setItems(FXCollections.observableArrayList(
-                "Warning/Evacuation", "Search and Rescue", "Immediate Assistance",
-                "Damage Assessment", "Continuing Assistance", "Infrastructure Restoration", "Debris Removal"));
-        taskPriorityComboBox.setItems(FXCollections.observableArrayList("Low", "Medium", "High", "Critical"));
-        reportStatusComboBox.setItems(FXCollections.observableArrayList(
-                "Reported", "Assessed", "In Progress", "Completed", "Closed"));
-        if (reportTaskStatusComboBox != null) {
-            reportTaskStatusComboBox.setItems(FXCollections.observableArrayList(
-                    "Pending", "In Progress", "Completed"));
-        }
-        if (departmentTaskStatusComboBox != null) {
-            departmentTaskStatusComboBox.setItems(FXCollections.observableArrayList(
-                    "Pending", "In Progress", "Completed"));
-        }
-    }
-
-    private void initializeTables() {
-        assessmentIdColumn.setCellValueFactory(new PropertyValueFactory<>("assessmentId"));
-        assessmentReportIdColumn.setCellValueFactory(new PropertyValueFactory<>("reportDisplayName"));
-        assessmentDamageColumn.setCellValueFactory(new PropertyValueFactory<>("damageLevel"));
-        assessmentPeopleColumn.setCellValueFactory(new PropertyValueFactory<>("peopleAffected"));
-        assessmentScoreColumn.setCellValueFactory(new PropertyValueFactory<>("priorityScore"));
-        assessmentPriorityColumn.setCellValueFactory(new PropertyValueFactory<>("priorityLevel"));
-
-        taskIdColumn.setCellValueFactory(new PropertyValueFactory<>("taskId"));
-        taskReportIdColumn.setCellValueFactory(new PropertyValueFactory<>("reportDisplayName"));
-        taskDepartmentColumn.setCellValueFactory(new PropertyValueFactory<>("departmentName"));
-        taskActivityColumn.setCellValueFactory(new PropertyValueFactory<>("activityType"));
-        taskPriorityColumn.setCellValueFactory(new PropertyValueFactory<>("priorityLevel"));
-        taskStatusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-
-        departmentIdColumn.setCellValueFactory(new PropertyValueFactory<>("departmentId"));
-        departmentNameColumn.setCellValueFactory(new PropertyValueFactory<>("departmentName"));
-        departmentServiceColumn.setCellValueFactory(new PropertyValueFactory<>("serviceType"));
-        departmentContactColumn.setCellValueFactory(new PropertyValueFactory<>("contactNumber"));
-        departmentStatusColumn.setCellValueFactory(new PropertyValueFactory<>("availabilityStatus"));
-
-        departmentTaskIdColumn.setCellValueFactory(new PropertyValueFactory<>("taskId"));
-        departmentTaskReportColumn.setCellValueFactory(new PropertyValueFactory<>("reportDisplayName"));
-        departmentTaskDepartmentColumn.setCellValueFactory(new PropertyValueFactory<>("departmentName"));
-        departmentTaskActivityColumn.setCellValueFactory(new PropertyValueFactory<>("activityType"));
-        departmentTaskPriorityColumn.setCellValueFactory(new PropertyValueFactory<>("priorityLevel"));
-        departmentTaskStatusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-
-        departmentTaskTable.getSelectionModel().selectedItemProperty().addListener((obs, oldTask, newTask) -> {
-            if (newTask != null) {
-                departmentTaskStatusComboBox.setValue(newTask.getStatus());
-            }
-        });
-
-        resourceIdColumn.setCellValueFactory(new PropertyValueFactory<>("resourceId"));
-        resourceNameColumn.setCellValueFactory(new PropertyValueFactory<>("resourceName"));
-        resourceCategoryColumn.setCellValueFactory(new PropertyValueFactory<>("category"));
-        resourceQuantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantityAvailable"));
-
-        allocationIdColumn.setCellValueFactory(new PropertyValueFactory<>("allocationId"));
-        allocationReportIdColumn.setCellValueFactory(new PropertyValueFactory<>("reportId"));
-        allocationResourceColumn.setCellValueFactory(new PropertyValueFactory<>("resourceName"));
-        allocationQuantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantityAllocated"));
-
-        reportDisplayColumn.setCellValueFactory(new PropertyValueFactory<>("reportDisplayName"));
-        reportTypeColumn.setCellValueFactory(new PropertyValueFactory<>("disasterType"));
-        reportSeverityColumn.setCellValueFactory(new PropertyValueFactory<>("severity"));
-        reportLocationColumn.setCellValueFactory(new PropertyValueFactory<>("location"));
-        reportPriorityColumn.setCellValueFactory(new PropertyValueFactory<>("priorityLevel"));
-        reportStatusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-
-        reportTable.getSelectionModel().selectedItemProperty().addListener((obs, oldReport, newReport) -> {
-            showSelectedReportDetails(newReport);
-            if (newReport != null) {
-                reportStatusComboBox.setValue(newReport.getStatus());
-            }
-        });
-    }
-
     @FXML
     private void showDashboard() {
         setVisiblePane(dashboardPane, "Dashboard");
-        refreshDashboard();
+        UiDataRefresher.refreshDashboard(clientService,
+                totalReportsLabel,
+                criticalReportsLabel,
+                openTasksLabel,
+                availableResourcesLabel,
+                reportStatusChart,
+                taskDepartmentChart,
+                resourceAvailabilityChart,
+                databaseStatusLabel);
     }
 
     @FXML
@@ -292,31 +267,46 @@ public class MainController {
     @FXML
     private void showAssessment() {
         setVisiblePane(assessmentPane, "Assess Report & Auto-Assign Tasks");
-        refreshAssessmentData();
+        UiDataRefresher.refreshAssessmentData(clientService,
+                assessmentTable,
+                assessmentReportComboBox);
     }
 
     @FXML
     private void showCoordination() {
         setVisiblePane(coordinationPane, "Add Extra Response Task");
-        refreshCoordinationData();
+        UiDataRefresher.refreshCoordinationData(clientService,
+                taskReportComboBox,
+                taskDepartmentComboBox,
+                taskTable);
     }
 
     @FXML
     private void showDepartments() {
         setVisiblePane(departmentsPane, "Update Department Task Status");
-        refreshDepartmentData();
+        UiDataRefresher.refreshDepartmentData(clientService,
+                departmentTable,
+                departmentTaskTable);
     }
 
     @FXML
     private void showResources() {
         setVisiblePane(resourcesPane, "Manage Emergency Resources");
-        refreshResourceData();
+        UiDataRefresher.refreshResourceData(clientService,
+                resourceReportComboBox,
+                resourceComboBox,
+                resourceTable,
+                allocationTable);
     }
 
     @FXML
     private void showReports() {
         setVisiblePane(reportsPane, "Report Status & Search");
-        refreshReportData();
+        UiDataRefresher.refreshReportData(clientService,
+                reportTable,
+                assessmentReportComboBox,
+                taskReportComboBox,
+                resourceReportComboBox);
     }
 
     private void setVisiblePane(VBox activePane, String title) {
@@ -366,7 +356,8 @@ public class MainController {
         }
 
         try {
-            if (duplicateReportService.isDuplicate(disasterType, location)) {
+            boolean duplicate = clientService.checkDuplicate(disasterType, location);
+            if (duplicate) {
                 duplicateCheckedAndPassed = false;
                 submitReportButton.setDisable(true);
                 showDuplicateStatus("Duplicate found. Report was not submitted.", "error-label");
@@ -374,17 +365,13 @@ public class MainController {
                 return;
             }
 
-            String priorityLevel = assessmentService.estimateInitialPriority(disasterType, severity);
-            String advice = evacuationAdviceService.generateAdvice(disasterType, severity);
-            String resources = resourceRecommendationService.recommendResources(disasterType, severity);
-
             DisasterReport report = new DisasterReport(reportTitle.trim(), disasterType, severity, location.trim(),
                     description.trim(), reportedBy.trim(), contactNumber.trim(), "Reported",
-                    priorityLevel, advice, resources);
+                    null, null, null);
 
-            disasterReportRepository.save(report);
+            DisasterReport savedReport = clientService.submitReport(report);
 
-            reportResultArea.setText(buildReportResult(report));
+            reportResultArea.setText(ViewFormatter.buildReportResult(savedReport));
             clearReportForm();
 
             duplicateCheckedAndPassed = false;
@@ -394,7 +381,7 @@ public class MainController {
             showDuplicateStatus("Report saved successfully. Please check duplicate before submitting another report.", "success-label");
 
             refreshAllData();
-        } catch (SQLException exception) {
+        } catch (IOException | ClassNotFoundException exception) {
             showError("Submit Error", exception.getMessage());
         }
     }
@@ -419,7 +406,7 @@ public class MainController {
         }
 
         try {
-            if (duplicateReportService.isDuplicate(disasterType, location)) {
+            if (clientService.checkDuplicate(disasterType, location)) {
                 duplicateCheckedAndPassed = false;
                 submitReportButton.setDisable(true);
                 showDuplicateStatus("Duplicate found. A similar active disaster report already exists.", "error-label");
@@ -431,7 +418,7 @@ public class MainController {
                 submitReportButton.setDisable(false);
                 showDuplicateStatus("No duplicate found. You can now submit the report.", "success-label");
             }
-        } catch (SQLException exception) {
+        } catch (IOException | ClassNotFoundException exception) {
             duplicateCheckedAndPassed = false;
             submitReportButton.setDisable(true);
             showError("Duplicate Check Error", exception.getMessage());
@@ -465,16 +452,14 @@ public class MainController {
         }
 
         try {
-            AssessmentResult result = assessmentService.assessDisaster(selectedReport, damageLevel,
+            AssessmentRequest request = new AssessmentRequest(selectedReport, damageLevel,
                     peopleAffected, infrastructureDamageCheckBox.isSelected());
-
-            assessmentRepository.save(result);
-            disasterReportRepository.updateStatusAndPriority(selectedReport.getReportId(), "Assessed", result.getPriorityLevel());
+            var assessmentResponse = clientService.saveAssessment(request);
+            AssessmentResult result = assessmentResponse.getAssessmentResult();
+            List<ResponseTask> generatedTasks = assessmentResponse.getGeneratedTasks();
 
             selectedReport.setPriorityLevel(result.getPriorityLevel());
             selectedReport.setStatus("Assessed");
-
-            List<ResponseTask> generatedTasks = departmentCoordinationService.generateStandardTasks(selectedReport);
 
             String generatedTaskText = generatedTasks.isEmpty()
                     ? "No new standard tasks were created because the required tasks already exist."
@@ -483,11 +468,6 @@ public class MainController {
                     .collect(Collectors.joining("\n"));
 
             assessmentOutputArea.setText(result.getAssessmentSummary()
-                    + "\n\nSuggested departments: "
-                    + String.join(", ", departmentCoordinationService.determineDepartments(
-                    selectedReport.getDisasterType(), selectedReport.getSeverity()))
-                    + "\n\nResponse activities: "
-                    + String.join(", ", departmentCoordinationService.getStandardActivities(selectedReport.getDisasterType()))
                     + "\n\nAuto-generated response tasks after assessment:\n"
                     + generatedTaskText);
 
@@ -502,7 +482,7 @@ public class MainController {
 
             refreshAllData();
             showAssessment();
-        } catch (SQLException exception) {
+        } catch (IOException | ClassNotFoundException exception) {
             showError("Assessment Error", exception.getMessage());
         }
     }
@@ -524,7 +504,7 @@ public class MainController {
             ResponseTask task = new ResponseTask(report.getReportId(), department.getDepartmentId(),
                     activityType, description.trim(), priority, "Pending");
 
-            responseTaskRepository.save(task);
+            clientService.createResponseTask(task);
 
             coordinationOutputArea.setText("Response task created successfully for " + department.getDepartmentName()
                     + ".\nActivity: " + activityType + "\nPriority: " + priority);
@@ -532,7 +512,7 @@ public class MainController {
             taskDescriptionArea.clear();
             refreshAllData();
             showCoordination();
-        } catch (SQLException exception) {
+        } catch (IOException | ClassNotFoundException exception) {
             showError("Task Error", exception.getMessage());
         }
     }
@@ -546,10 +526,14 @@ public class MainController {
             return;
         }
 
-        String recommendation = resourceRecommendationService.recommendResources(report.getDisasterType(), report.getSeverity());
+        try {
+            String recommendation = clientService.recommendResources(report);
 
-        resourceOutputArea.setText("Recommended resources for " + report + ":\n\n" + recommendation
-                + "\n\nThese recommendations are generated automatically based on disaster type and severity.");
+            resourceOutputArea.setText("Recommended resources for " + report + ":\n\n" + recommendation
+                    + "\n\nThese recommendations are generated automatically based on disaster type and severity.");
+        } catch (IOException | ClassNotFoundException exception) {
+            showError("Resource Recommendation Error", exception.getMessage());
+        }
     }
 
     @FXML
@@ -571,7 +555,7 @@ public class MainController {
         }
 
         try {
-            resourceRepository.allocateResource(report.getReportId(), resource, quantity,
+            clientService.allocateResource(report.getReportId(), resource, quantity,
                     "Allocated from Resources page");
 
             resourceOutputArea.setText("Allocated " + quantity + " x " + resource.getResourceName()
@@ -580,7 +564,7 @@ public class MainController {
             quantityField.clear();
             refreshAllData();
             showResources();
-        } catch (SQLException | IllegalArgumentException exception) {
+        } catch (IOException | ClassNotFoundException | IllegalArgumentException exception) {
             showError("Resource Allocation Error", exception.getMessage());
         }
     }
@@ -591,11 +575,11 @@ public class MainController {
 
         try {
             List<DisasterReport> reports = isBlank(keyword)
-                    ? disasterReportRepository.findAll()
-                    : disasterReportRepository.search(keyword.trim());
+                    ? clientService.findAllReports()
+                    : clientService.searchReports(keyword.trim());
 
             reportTable.setItems(FXCollections.observableArrayList(reports));
-        } catch (SQLException exception) {
+        } catch (IOException | ClassNotFoundException exception) {
             showError("Search Error", exception.getMessage());
         }
     }
@@ -644,16 +628,17 @@ public class MainController {
 
     private void updateReportStatus(DisasterReport report, String status) {
         try {
-            disasterReportRepository.updateStatus(report.getReportId(), status);
+            clientService.updateReportStatus(report.getReportId(), status);
 
             report.setStatus(status);
             reportStatusComboBox.setValue(status);
 
+            List<ResponseTask> tasks = clientService.findTasksByReportId(report.getReportId());
             reportDetailsArea.setText(report.getReportDisplayName() + " status updated to " + status
-                    + ".\n\n" + buildReportDetails(report));
+                    + ".\n\n" + ViewFormatter.buildReportDetails(report, tasks));
 
             refreshAllData();
-        } catch (SQLException exception) {
+        } catch (IOException | ClassNotFoundException exception) {
             showError("Report Status Update Error", exception.getMessage());
         }
     }
@@ -768,7 +753,7 @@ public class MainController {
 
     private void updateTaskStatus(ResponseTask task, String status) {
         try {
-            responseTaskRepository.updateStatus(task.getTaskId(), status);
+            clientService.updateTaskStatus(task.getTaskId(), status);
 
             task.setStatus(status);
 
@@ -784,179 +769,55 @@ public class MainController {
 
             if (selectedReport != null) {
                 loadTasksForSelectedReport(selectedReport);
+                List<ResponseTask> tasks = clientService.findTasksByReportId(selectedReport.getReportId());
                 reportDetailsArea.setText("Task #" + task.getTaskId() + " status updated to " + status
-                        + ".\n\n" + buildReportDetails(selectedReport));
+                        + ".\n\n" + ViewFormatter.buildReportDetails(selectedReport, tasks));
             }
 
             coordinationOutputArea.setText("Task #" + task.getTaskId() + " status updated to " + status + ".");
 
             refreshAllData();
-        } catch (SQLException exception) {
+        } catch (IOException | ClassNotFoundException exception) {
             showError("Task Status Update Error", exception.getMessage());
         }
     }
 
     @FXML
     private void refreshAllData() {
-        refreshDashboard();
-        refreshReportData();
-        refreshAssessmentData();
-        refreshCoordinationData();
-        refreshDepartmentData();
-        refreshResourceData();
-    }
+        UiDataRefresher.refreshDashboard(clientService,
+                totalReportsLabel,
+                criticalReportsLabel,
+                openTasksLabel,
+                availableResourcesLabel,
+                reportStatusChart,
+                taskDepartmentChart,
+                resourceAvailabilityChart,
+                databaseStatusLabel);
 
-    private void refreshDashboard() {
-        try {
-            List<DisasterReport> reports = disasterReportRepository.findAll();
-            List<ResponseTask> tasks = responseTaskRepository.findAll();
-            List<Resource> resources = resourceRepository.findAll();
+        UiDataRefresher.refreshReportData(clientService,
+                reportTable,
+                assessmentReportComboBox,
+                taskReportComboBox,
+                resourceReportComboBox);
 
-            long totalReports = reports.size();
+        UiDataRefresher.refreshAssessmentData(clientService,
+                assessmentTable,
+                assessmentReportComboBox);
 
-            long criticalReports = reports.stream()
-                    .filter(report -> "Critical".equalsIgnoreCase(report.getPriorityLevel()))
-                    .count();
+        UiDataRefresher.refreshCoordinationData(clientService,
+                taskReportComboBox,
+                taskDepartmentComboBox,
+                taskTable);
 
-            long openTasks = tasks.stream()
-                    .filter(task -> !"Completed".equalsIgnoreCase(task.getStatus()))
-                    .count();
+        UiDataRefresher.refreshDepartmentData(clientService,
+                departmentTable,
+                departmentTaskTable);
 
-            int totalResources = resources.stream()
-                    .mapToInt(Resource::getQuantityAvailable)
-                    .sum();
-
-            totalReportsLabel.setText(String.valueOf(totalReports));
-            criticalReportsLabel.setText(String.valueOf(criticalReports));
-            openTasksLabel.setText(String.valueOf(openTasks));
-            availableResourcesLabel.setText(String.valueOf(totalResources));
-
-            updateReportStatusChart(reports);
-            updateTaskDepartmentChart(tasks);
-            updateResourceAvailabilityChart(resources);
-        } catch (SQLException exception) {
-            databaseStatusLabel.setText("Database error");
-        }
-    }
-
-    private void updateReportStatusChart(List<DisasterReport> reports) {
-        var chartData = FXCollections.<PieChart.Data>observableArrayList();
-
-        for (String status : List.of("Reported", "Assessed", "In Progress", "Completed", "Closed")) {
-            long count = reports.stream()
-                    .filter(report -> status.equalsIgnoreCase(report.getStatus()))
-                    .count();
-
-            if (count > 0) {
-                chartData.add(new PieChart.Data(status, count));
-            }
-        }
-
-        if (chartData.isEmpty()) {
-            chartData.add(new PieChart.Data("No reports yet", 1));
-        }
-
-        reportStatusChart.setData(chartData);
-    }
-
-    private void updateTaskDepartmentChart(List<ResponseTask> tasks) {
-        XYChart.Series<String, Number> series = new XYChart.Series<>();
-        series.setName("In Progress Tasks");
-
-        tasks.stream()
-                .filter(task -> "In Progress".equalsIgnoreCase(task.getStatus()))
-                .collect(Collectors.groupingBy(ResponseTask::getDepartmentName, Collectors.counting()))
-                .forEach((department, count) -> series.getData().add(new XYChart.Data<>(department, count)));
-
-        if (series.getData().isEmpty()) {
-            series.getData().add(new XYChart.Data<>("No in-progress tasks", 0));
-        }
-
-        taskDepartmentChart.getData().setAll(series);
-    }
-
-    private void updateResourceAvailabilityChart(List<Resource> resources) {
-        XYChart.Series<String, Number> series = new XYChart.Series<>();
-        series.setName("Available Resources");
-
-        for (Resource resource : resources) {
-            series.getData().add(new XYChart.Data<>(resource.getResourceName(), resource.getQuantityAvailable()));
-        }
-
-        if (series.getData().isEmpty()) {
-            series.getData().add(new XYChart.Data<>("No resources", 0));
-        }
-
-        resourceAvailabilityChart.getData().setAll(series);
-    }
-
-    private void refreshReportData() {
-        try {
-            ObservableList<DisasterReport> reports = FXCollections.observableArrayList(disasterReportRepository.findAll());
-
-            reportTable.setItems(reports);
-            assessmentReportComboBox.setItems(reports);
-            taskReportComboBox.setItems(reports);
-            resourceReportComboBox.setItems(reports);
-        } catch (SQLException exception) {
-            showError("Report Refresh Error", exception.getMessage());
-        }
-    }
-
-    private void refreshAssessmentData() {
-        try {
-            assessmentTable.setItems(FXCollections.observableArrayList(assessmentRepository.findAll()));
-            assessmentReportComboBox.setItems(FXCollections.observableArrayList(disasterReportRepository.findAll()));
-        } catch (SQLException exception) {
-            showError("Assessment Refresh Error", exception.getMessage());
-        }
-    }
-
-    private void refreshCoordinationData() {
-        try {
-            taskReportComboBox.setItems(FXCollections.observableArrayList(disasterReportRepository.findAll()));
-            taskDepartmentComboBox.setItems(FXCollections.observableArrayList(departmentRepository.findAll()));
-            taskTable.setItems(FXCollections.observableArrayList(responseTaskRepository.findAll()));
-        } catch (SQLException exception) {
-            showError("Coordination Refresh Error", exception.getMessage());
-        }
-    }
-
-    private void refreshDepartmentData() {
-        try {
-            departmentTable.setItems(FXCollections.observableArrayList(departmentRepository.findAll()));
-            departmentTaskTable.setItems(FXCollections.observableArrayList(responseTaskRepository.findAll()));
-        } catch (SQLException exception) {
-            showError("Department Refresh Error", exception.getMessage());
-        }
-    }
-
-    private void refreshResourceData() {
-        try {
-            resourceReportComboBox.setItems(FXCollections.observableArrayList(disasterReportRepository.findAll()));
-            resourceComboBox.setItems(FXCollections.observableArrayList(resourceRepository.findAll()));
-            resourceTable.setItems(FXCollections.observableArrayList(resourceRepository.findAll()));
-            allocationTable.setItems(FXCollections.observableArrayList(resourceRepository.findAllocations()));
-        } catch (SQLException exception) {
-            showError("Resource Refresh Error", exception.getMessage());
-        }
-    }
-
-    private String buildReportResult(DisasterReport report) {
-        StringBuilder builder = new StringBuilder();
-
-        builder.append("Disaster report saved successfully.\n\n");
-        builder.append("Report: ").append(report.getReportDisplayName()).append("\n");
-        builder.append("Title: ").append(report.getReportTitle()).append("\n");
-        builder.append("Type: ").append(report.getDisasterType()).append("\n");
-        builder.append("Severity: ").append(report.getSeverity()).append("\n");
-        builder.append("Location: ").append(report.getLocation()).append("\n");
-        builder.append("Initial Priority: ").append(report.getPriorityLevel()).append("\n\n");
-        builder.append("Evacuation Advice:\n").append(report.getEvacuationAdvice()).append("\n\n");
-        builder.append("Recommended Resources:\n").append(report.getRecommendedResources()).append("\n\n");
-        builder.append("Next step: open Assessment & Priority, assess this report, and the system will automatically create the standard response tasks.");
-
-        return builder.toString();
+        UiDataRefresher.refreshResourceData(clientService,
+                resourceReportComboBox,
+                resourceComboBox,
+                resourceTable,
+                allocationTable);
     }
 
     private void showSelectedReportDetails(DisasterReport report) {
@@ -971,47 +832,12 @@ public class MainController {
             return;
         }
 
-        reportDetailsArea.setText(buildReportDetails(report));
-    }
-
-    private String buildReportDetails(DisasterReport report) {
-        StringBuilder builder = new StringBuilder();
-
-        builder.append("Report: ").append(report.getReportDisplayName())
-                .append("\nTitle: ").append(report.getReportTitle())
-                .append("\nType: ").append(report.getDisasterType())
-                .append("\nSeverity: ").append(report.getSeverity())
-                .append("\nLocation: ").append(report.getLocation())
-                .append("\nStatus: ").append(report.getStatus())
-                .append("\nPriority: ").append(report.getPriorityLevel())
-                .append("\nReporter: ").append(report.getReportedBy())
-                .append("\nContact: ").append(report.getContactNumber())
-                .append("\nCreated: ").append(report.getCreatedAt())
-                .append("\n\nDescription:\n").append(report.getDescription())
-                .append("\n\nEvacuation Advice:\n").append(report.getEvacuationAdvice())
-                .append("\n\nRecommended Resources:\n").append(report.getRecommendedResources());
-
         try {
-            List<ResponseTask> tasks = responseTaskRepository.findByReportId(report.getReportId());
-
-            builder.append("\n\nResponse Tasks:\n");
-
-            if (tasks.isEmpty()) {
-                builder.append("No response tasks created yet.");
-            } else {
-                for (ResponseTask task : tasks) {
-                    builder.append("• Task #").append(task.getTaskId())
-                            .append(" | ").append(task.getActivityType())
-                            .append(" | ").append(task.getDepartmentName())
-                            .append(" | ").append(task.getStatus())
-                            .append("\n");
-                }
-            }
-        } catch (SQLException exception) {
-            builder.append("\n\nCould not load response tasks: ").append(exception.getMessage());
+            List<ResponseTask> tasks = clientService.findTasksByReportId(report.getReportId());
+            reportDetailsArea.setText(ViewFormatter.buildReportDetails(report, tasks));
+        } catch (IOException | ClassNotFoundException exception) {
+            reportDetailsArea.setText(ViewFormatter.buildReportDetails(report, List.of()));
         }
-
-        return builder.toString();
     }
 
     private void loadTasksForSelectedReport(DisasterReport report) {
@@ -1026,11 +852,11 @@ public class MainController {
                 return;
             }
 
-            List<ResponseTask> tasks = responseTaskRepository.findByReportId(report.getReportId());
+            List<ResponseTask> tasks = clientService.findTasksByReportId(report.getReportId());
 
             reportTaskComboBox.setItems(FXCollections.observableArrayList(tasks));
             reportTaskComboBox.getSelectionModel().clearSelection();
-        } catch (SQLException exception) {
+        } catch (IOException | ClassNotFoundException exception) {
             showError("Task Load Error", exception.getMessage());
         }
     }

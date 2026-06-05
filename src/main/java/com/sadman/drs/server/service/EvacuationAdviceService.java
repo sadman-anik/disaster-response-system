@@ -1,4 +1,4 @@
-package com.sadman.drs.service;
+package com.sadman.drs.server.service;
 
 /**
  * Creative feature: generates public safety and evacuation advice based on disaster type and severity.

@@ -1,6 +1,6 @@
-package com.sadman.drs.repository;
+package com.sadman.drs.server.repository;
 
-import com.sadman.drs.config.DatabaseConnection;
+import com.sadman.drs.server.config.DatabaseConnection;
 import com.sadman.drs.model.DisasterReport;
 
 import java.sql.*;

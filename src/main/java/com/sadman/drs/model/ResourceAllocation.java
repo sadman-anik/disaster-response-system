@@ -1,9 +1,11 @@
 package com.sadman.drs.model;
 
+import java.io.Serializable;
+
 /**
  * Model class for allocated emergency resources per disaster report.
  */
-public class ResourceAllocation {
+public class ResourceAllocation implements Serializable {
     private int allocationId;
     private int reportId;
     private int resourceId;

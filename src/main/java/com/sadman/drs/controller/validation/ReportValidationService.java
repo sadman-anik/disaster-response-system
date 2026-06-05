@@ -1,4 +1,4 @@
-package com.sadman.drs.service;
+package com.sadman.drs.controller.validation;
 
 /**
  * Performs user input validation for the disaster report form.

@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 
 <BorderPane xmlns="http://javafx.com/javafx/17.0.10" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.sadman.drs.controller.MainController" styleClass="root-pane">
+            fx:controller="com.sadman.drs.controller.ui.MainController" styleClass="root-pane">
 
     <left>
         <VBox spacing="12" styleClass="sidebar" prefWidth="250">

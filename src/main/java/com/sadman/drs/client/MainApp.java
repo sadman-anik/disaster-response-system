@@ -1,4 +1,4 @@
-package com.sadman.drs;
+package com.sadman.drs.client;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -14,11 +14,11 @@ public class MainApp extends Application {
 
 @Override
 public void start(Stage stage) throws IOException {
-    FXMLLoader loader = new FXMLLoader(MainApp.class.getResource("/com/sadman/drs/main.fxml"));
+    FXMLLoader loader = new FXMLLoader(MainApp.class.getResource("/main.fxml"));
 
     Scene scene = new Scene(loader.load(), 1450, 900);
 
-    scene.getStylesheets().add(MainApp.class.getResource("/com/sadman/drs/style.css").toExternalForm());
+    scene.getStylesheets().add(MainApp.class.getResource("/style.css").toExternalForm());
 
     stage.setTitle("DRS - Disaster Response System");
     stage.setScene(scene);

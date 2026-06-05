@@ -1,6 +1,6 @@
-package com.sadman.drs.service;
+package com.sadman.drs.server.service;
 
-import com.sadman.drs.repository.DisasterReportRepository;
+import com.sadman.drs.server.repository.DisasterReportRepository;
 
 import java.sql.SQLException;
 

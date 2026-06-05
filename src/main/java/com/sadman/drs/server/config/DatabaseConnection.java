@@ -1,4 +1,4 @@
-package com.sadman.drs.config;
+package com.sadman.drs.server.config;
 
 import java.io.IOException;
 import java.io.InputStream;

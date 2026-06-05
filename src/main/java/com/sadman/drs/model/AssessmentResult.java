@@ -1,9 +1,11 @@
 package com.sadman.drs.model;
 
+import java.io.Serializable;
+
 /**
  * Model class for assessment, damage level, priority score and priority result.
  */
-public class AssessmentResult {
+public class AssessmentResult implements Serializable {
     private int assessmentId;
     private int reportId;
     private String reportTitle;

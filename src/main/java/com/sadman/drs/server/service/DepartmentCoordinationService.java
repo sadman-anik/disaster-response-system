@@ -1,10 +1,10 @@
-package com.sadman.drs.service;
+package com.sadman.drs.server.service;
 
 import com.sadman.drs.model.Department;
 import com.sadman.drs.model.DisasterReport;
 import com.sadman.drs.model.ResponseTask;
-import com.sadman.drs.repository.DepartmentRepository;
-import com.sadman.drs.repository.ResponseTaskRepository;
+import com.sadman.drs.server.repository.DepartmentRepository;
+import com.sadman.drs.server.repository.ResponseTaskRepository;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

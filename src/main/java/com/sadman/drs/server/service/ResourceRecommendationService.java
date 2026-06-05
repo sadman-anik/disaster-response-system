@@ -1,4 +1,4 @@
-package com.sadman.drs.service;
+package com.sadman.drs.server.service;
 
 import java.util.List;
 

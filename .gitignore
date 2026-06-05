@@ -6,6 +6,7 @@ target/
 maven-status/
 createdFiles.lst
 inputFiles.lst
+.DS_Store
 
 # VS Code
 .vscode/

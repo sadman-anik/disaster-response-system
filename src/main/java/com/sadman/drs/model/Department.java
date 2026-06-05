@@ -1,9 +1,11 @@
 package com.sadman.drs.model;
 
+import java.io.Serializable;
+
 /**
  * Model class for external departments/organisations involved in disaster response.
  */
-public class Department {
+public class Department implements Serializable {
     private int departmentId;
     private String departmentName;
     private String serviceType;

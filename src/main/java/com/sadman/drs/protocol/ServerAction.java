@@ -1,0 +1,25 @@
+package com.sadman.drs.protocol;
+
+/**
+ * Supported actions for the DRS client-server protocol.
+ */
+public enum ServerAction {
+    PING,
+    SUBMIT_REPORT,
+    FETCH_REPORTS,
+    SEARCH_REPORTS,
+    CHECK_DUPLICATE,
+    SAVE_ASSESSMENT,
+    FETCH_ASSESSMENTS,
+    FETCH_DEPARTMENTS,
+    FETCH_TASKS,
+    FETCH_RESOURCES,
+    FETCH_ALLOCATIONS,
+    CREATE_RESPONSE_TASK,
+    ALLOCATE_RESOURCE,
+    UPDATE_REPORT_STATUS,
+    UPDATE_TASK_STATUS,
+    FETCH_TASKS_BY_REPORT,
+    RECOMMEND_RESOURCES,
+    AUTHENTICATE
+}
