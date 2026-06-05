@@ -40,6 +40,9 @@ The code is organised into logical packages:
 
 This separation keeps the JavaFX UI layer separate from networking, transport, and backend logic.
 
+## Secure Transport
+The client/server communication channel is encrypted using AES-based transport protection. Requests and responses are wrapped in an encrypted stream so disaster data is not sent in plaintext over the socket connection.
+
 ## Example Client → Server → Client Flow
 
 1. The JavaFX controller builds a `DisasterReport` object from the report form.

@@ -3,8 +3,13 @@ package com.sadman.drs.server;
 import com.sadman.drs.protocol.ServerAction;
 import com.sadman.drs.protocol.ServerRequest;
 import com.sadman.drs.protocol.ServerResponse;
+import com.sadman.drs.security.CryptoUtils;
 import com.sadman.drs.server.DRSServerRequestProcessor;
+import com.sadman.drs.server.config.ServerConfig;
 
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -24,8 +29,11 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
-        try (ObjectOutputStream outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
-             ObjectInputStream inputStream = new ObjectInputStream(clientSocket.getInputStream())) {
+        Cipher encryptCipher = CryptoUtils.createCipher(Cipher.ENCRYPT_MODE, ServerConfig.ENCRYPTION_KEY);
+        Cipher decryptCipher = CryptoUtils.createCipher(Cipher.DECRYPT_MODE, ServerConfig.ENCRYPTION_KEY);
+
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(new CipherOutputStream(clientSocket.getOutputStream(), encryptCipher));
+             ObjectInputStream inputStream = new ObjectInputStream(new CipherInputStream(clientSocket.getInputStream(), decryptCipher))) {
 
             while (!clientSocket.isClosed()) {
                 try {

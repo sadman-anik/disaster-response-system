@@ -3,7 +3,11 @@ package com.sadman.drs.client.bridge;
 import com.sadman.drs.protocol.ServerRequest;
 import com.sadman.drs.protocol.ServerResponse;
 import com.sadman.drs.server.config.ServerConfig;
+import com.sadman.drs.security.CryptoUtils;
 
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -31,8 +35,10 @@ public class DRSClient implements AutoCloseable {
 
     public void connect() throws IOException {
         socket = new Socket(host, port);
-        outputStream = new ObjectOutputStream(socket.getOutputStream());
-        inputStream = new ObjectInputStream(socket.getInputStream());
+        Cipher encryptCipher = CryptoUtils.createCipher(Cipher.ENCRYPT_MODE, ServerConfig.ENCRYPTION_KEY);
+        Cipher decryptCipher = CryptoUtils.createCipher(Cipher.DECRYPT_MODE, ServerConfig.ENCRYPTION_KEY);
+        outputStream = new ObjectOutputStream(new CipherOutputStream(socket.getOutputStream(), encryptCipher));
+        inputStream = new ObjectInputStream(new CipherInputStream(socket.getInputStream(), decryptCipher));
     }
 
     public ServerResponse sendRequest(ServerRequest request) throws IOException, ClassNotFoundException {
