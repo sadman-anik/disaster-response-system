@@ -27,12 +27,7 @@ public class UserRepository {
             statement.setString(1, username);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    return new User(
-                            resultSet.getInt("user_id"),
-                            resultSet.getString("username"),
-                            resultSet.getString("role"),
-                            resultSet.getString("password_hash")
-                    );
+                    return mapResultSet(resultSet);
                 }
             }
         }
@@ -95,6 +90,15 @@ public class UserRepository {
             }
             return user;
         }
+    }
+
+    private User mapResultSet(ResultSet resultSet) throws SQLException {
+        return new User(
+                resultSet.getInt("user_id"),
+                resultSet.getString("username"),
+                resultSet.getString("role"),
+                resultSet.getString("password_hash")
+        );
     }
 
     public static String hashPassword(String password) {

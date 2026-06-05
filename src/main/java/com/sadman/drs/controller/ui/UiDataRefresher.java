@@ -7,6 +7,7 @@ import com.sadman.drs.model.DisasterReport;
 import com.sadman.drs.model.Resource;
 import com.sadman.drs.model.ResourceAllocation;
 import com.sadman.drs.model.ResponseTask;
+import com.sadman.drs.model.StatusValues;
 import javafx.collections.FXCollections;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.PieChart;
@@ -37,10 +38,10 @@ public class UiDataRefresher {
 
             long totalReports = reports.size();
             long criticalReports = reports.stream()
-                    .filter(report -> "Critical".equalsIgnoreCase(report.getPriorityLevel()))
+                    .filter(report -> StatusValues.CRITICAL.equalsIgnoreCase(report.getPriorityLevel()))
                     .count();
             long openTasks = tasks.stream()
-                    .filter(task -> !"Completed".equalsIgnoreCase(task.getStatus()))
+                    .filter(task -> !StatusValues.COMPLETED.equalsIgnoreCase(task.getStatus()))
                     .count();
             int totalResources = resources.stream()
                     .mapToInt(Resource::getQuantityAvailable)

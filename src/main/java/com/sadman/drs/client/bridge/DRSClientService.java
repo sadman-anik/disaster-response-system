@@ -11,6 +11,8 @@ import com.sadman.drs.model.User;
 import com.sadman.drs.protocol.AllocateResourceRequest;
 import com.sadman.drs.protocol.AssessmentRequest;
 import com.sadman.drs.protocol.AssessmentResponse;
+import com.sadman.drs.protocol.AuditSearchRequest;
+import com.sadman.drs.protocol.AuthenticationRequest;
 import com.sadman.drs.protocol.CheckDuplicateRequest;
 import com.sadman.drs.protocol.ReportIdRequest;
 import com.sadman.drs.protocol.SearchReportsRequest;
@@ -44,197 +46,123 @@ public class DRSClientService implements AutoCloseable {
     }
 
     public User authenticate(String username, String password) throws IOException, ClassNotFoundException {
-        ensureConnected();
-        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.AUTHENTICATE,
-                new com.sadman.drs.protocol.AuthenticationRequest(username, password)));
-        if (!response.isSuccess()) {
-            return null;
-        }
-        return (User) response.getPayload();
+        return sendNullable(ServerAction.AUTHENTICATE, new AuthenticationRequest(username, password), User.class);
     }
 
     public User registerUser(String username, String password, String role) throws IOException, ClassNotFoundException {
-        ensureConnected();
-        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.REGISTER_USER,
-                new com.sadman.drs.protocol.UserRegistrationRequest(username, password, role)));
-        if (!response.isSuccess()) {
-            return null;
-        }
-        return (User) response.getPayload();
+        return sendNullable(ServerAction.REGISTER_USER, new UserRegistrationRequest(username, password, role), User.class);
     }
 
     public DisasterReport submitReport(DisasterReport report) throws IOException, ClassNotFoundException {
-        ensureConnected();
-        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.SUBMIT_REPORT, report));
-        if (!response.isSuccess()) {
-            throw new IllegalStateException(response.getMessage());
-        }
-        return (DisasterReport) response.getPayload();
+        return sendPayload(ServerAction.SUBMIT_REPORT, report, DisasterReport.class);
     }
 
     @SuppressWarnings("unchecked")
     public List<DisasterReport> findAllReports() throws IOException, ClassNotFoundException {
-        ensureConnected();
-        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.FETCH_REPORTS, null));
-        if (!response.isSuccess()) {
-            throw new IllegalStateException(response.getMessage());
-        }
-        return (List<DisasterReport>) response.getPayload();
+        return sendList(ServerAction.FETCH_REPORTS, null);
     }
 
     @SuppressWarnings("unchecked")
     public List<DisasterReport> searchReports(String keyword) throws IOException, ClassNotFoundException {
-        ensureConnected();
-        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.SEARCH_REPORTS, new SearchReportsRequest(keyword)));
-        if (!response.isSuccess()) {
-            throw new IllegalStateException(response.getMessage());
-        }
-        return (List<DisasterReport>) response.getPayload();
+        return sendList(ServerAction.SEARCH_REPORTS, new SearchReportsRequest(keyword));
     }
 
     public boolean checkDuplicate(String disasterType, String location) throws IOException, ClassNotFoundException {
-        ensureConnected();
-        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.CHECK_DUPLICATE, new CheckDuplicateRequest(disasterType, location)));
-        if (!response.isSuccess()) {
-            throw new IllegalStateException(response.getMessage());
-        }
+        ServerResponse response = send(ServerAction.CHECK_DUPLICATE, new CheckDuplicateRequest(disasterType, location));
         return Boolean.TRUE.equals(response.getPayload());
     }
 
     public AssessmentResponse saveAssessment(AssessmentRequest request) throws IOException, ClassNotFoundException {
-        ensureConnected();
-        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.SAVE_ASSESSMENT, request));
-        if (!response.isSuccess()) {
-            throw new IllegalStateException(response.getMessage());
-        }
-        return (AssessmentResponse) response.getPayload();
+        return sendPayload(ServerAction.SAVE_ASSESSMENT, request, AssessmentResponse.class);
     }
 
     @SuppressWarnings("unchecked")
     public List<AssessmentResult> findAllAssessments() throws IOException, ClassNotFoundException {
-        ensureConnected();
-        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.FETCH_ASSESSMENTS, null));
-        if (!response.isSuccess()) {
-            throw new IllegalStateException(response.getMessage());
-        }
-        return (List<AssessmentResult>) response.getPayload();
+        return sendList(ServerAction.FETCH_ASSESSMENTS, null);
     }
 
     @SuppressWarnings("unchecked")
     public List<Department> findAllDepartments() throws IOException, ClassNotFoundException {
-        ensureConnected();
-        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.FETCH_DEPARTMENTS, null));
-        if (!response.isSuccess()) {
-            throw new IllegalStateException(response.getMessage());
-        }
-        return (List<Department>) response.getPayload();
+        return sendList(ServerAction.FETCH_DEPARTMENTS, null);
     }
 
     @SuppressWarnings("unchecked")
     public List<ResponseTask> findAllTasks() throws IOException, ClassNotFoundException {
-        ensureConnected();
-        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.FETCH_TASKS, null));
-        if (!response.isSuccess()) {
-            throw new IllegalStateException(response.getMessage());
-        }
-        return (List<ResponseTask>) response.getPayload();
+        return sendList(ServerAction.FETCH_TASKS, null);
     }
 
     @SuppressWarnings("unchecked")
     public List<Resource> findAllResources() throws IOException, ClassNotFoundException {
-        ensureConnected();
-        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.FETCH_RESOURCES, null));
-        if (!response.isSuccess()) {
-            throw new IllegalStateException(response.getMessage());
-        }
-        return (List<Resource>) response.getPayload();
+        return sendList(ServerAction.FETCH_RESOURCES, null);
     }
 
     @SuppressWarnings("unchecked")
     public List<ResourceAllocation> findAllAllocations() throws IOException, ClassNotFoundException {
-        ensureConnected();
-        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.FETCH_ALLOCATIONS, null));
-        if (!response.isSuccess()) {
-            throw new IllegalStateException(response.getMessage());
-        }
-        return (List<ResourceAllocation>) response.getPayload();
+        return sendList(ServerAction.FETCH_ALLOCATIONS, null);
     }
 
     public ResponseTask createResponseTask(ResponseTask task) throws IOException, ClassNotFoundException {
-        ensureConnected();
-        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.CREATE_RESPONSE_TASK, task));
-        if (!response.isSuccess()) {
-            throw new IllegalStateException(response.getMessage());
-        }
-        return (ResponseTask) response.getPayload();
+        return sendPayload(ServerAction.CREATE_RESPONSE_TASK, task, ResponseTask.class);
     }
 
     public void allocateResource(int reportId, Resource resource, int quantity, String notes) throws IOException, ClassNotFoundException {
-        ensureConnected();
-        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.ALLOCATE_RESOURCE,
-                new AllocateResourceRequest(reportId, resource, quantity, notes)));
-        if (!response.isSuccess()) {
-            throw new IllegalStateException(response.getMessage());
-        }
+        send(ServerAction.ALLOCATE_RESOURCE, new AllocateResourceRequest(reportId, resource, quantity, notes));
     }
 
     public void updateReportStatus(int reportId, String status) throws IOException, ClassNotFoundException {
-        ensureConnected();
-        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.UPDATE_REPORT_STATUS,
-                new UpdateReportStatusRequest(reportId, status)));
-        if (!response.isSuccess()) {
-            throw new IllegalStateException(response.getMessage());
-        }
+        send(ServerAction.UPDATE_REPORT_STATUS, new UpdateReportStatusRequest(reportId, status));
     }
 
     public void updateTaskStatus(int taskId, String status) throws IOException, ClassNotFoundException {
-        ensureConnected();
-        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.UPDATE_TASK_STATUS,
-                new UpdateTaskStatusRequest(taskId, status)));
-        if (!response.isSuccess()) {
-            throw new IllegalStateException(response.getMessage());
-        }
+        send(ServerAction.UPDATE_TASK_STATUS, new UpdateTaskStatusRequest(taskId, status));
     }
 
     @SuppressWarnings("unchecked")
     public List<ResponseTask> findTasksByReportId(int reportId) throws IOException, ClassNotFoundException {
-        ensureConnected();
-        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.FETCH_TASKS_BY_REPORT,
-                new ReportIdRequest(reportId)));
-        if (!response.isSuccess()) {
-            throw new IllegalStateException(response.getMessage());
-        }
-        return (List<ResponseTask>) response.getPayload();
+        return sendList(ServerAction.FETCH_TASKS_BY_REPORT, new ReportIdRequest(reportId));
     }
 
     public String recommendResources(DisasterReport report) throws IOException, ClassNotFoundException {
-        ensureConnected();
-        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.RECOMMEND_RESOURCES, report));
-        if (!response.isSuccess()) {
-            throw new IllegalStateException(response.getMessage());
-        }
-        return (String) response.getPayload();
+        return sendPayload(ServerAction.RECOMMEND_RESOURCES, report, String.class);
     }
 
     @SuppressWarnings("unchecked")
     public List<AuditRecord> findAllAuditEvents() throws IOException, ClassNotFoundException {
-        ensureConnected();
-        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.FETCH_AUDIT_EVENTS, null));
-        if (!response.isSuccess()) {
-            throw new IllegalStateException(response.getMessage());
-        }
-        return (List<AuditRecord>) response.getPayload();
+        return sendList(ServerAction.FETCH_AUDIT_EVENTS, null);
     }
 
     @SuppressWarnings("unchecked")
     public List<AuditRecord> searchAuditEvents(String keyword) throws IOException, ClassNotFoundException {
+        return sendList(ServerAction.SEARCH_AUDIT_EVENTS, new AuditSearchRequest(keyword));
+    }
+
+    private ServerResponse send(ServerAction action, Object payload) throws IOException, ClassNotFoundException {
         ensureConnected();
-        ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.SEARCH_AUDIT_EVENTS,
-                new com.sadman.drs.protocol.AuditSearchRequest(keyword)));
+        ServerResponse response = client.sendRequest(new ServerRequest(action, payload));
         if (!response.isSuccess()) {
             throw new IllegalStateException(response.getMessage());
         }
-        return (List<AuditRecord>) response.getPayload();
+        return response;
+    }
+
+    private <T> T sendPayload(ServerAction action, Object payload, Class<T> payloadType)
+            throws IOException, ClassNotFoundException {
+        return payloadType.cast(send(action, payload).getPayload());
+    }
+
+    private <T> T sendNullable(ServerAction action, Object payload, Class<T> payloadType)
+            throws IOException, ClassNotFoundException {
+        ensureConnected();
+        ServerResponse response = client.sendRequest(new ServerRequest(action, payload));
+        if (!response.isSuccess()) {
+            return null;
+        }
+        return payloadType.cast(response.getPayload());
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> List<T> sendList(ServerAction action, Object payload) throws IOException, ClassNotFoundException {
+        return (List<T>) send(action, payload).getPayload();
     }
 
     private void ensureConnected() {

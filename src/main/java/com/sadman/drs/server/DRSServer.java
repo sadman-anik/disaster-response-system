@@ -2,8 +2,6 @@ package com.sadman.drs.server;
 
 import com.sadman.drs.server.config.DatabaseConnection;
 import com.sadman.drs.server.config.ServerConfig;
-import com.sadman.drs.server.repository.DepartmentRepository;
-import com.sadman.drs.server.repository.ResourceRepository;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -20,8 +18,6 @@ public class DRSServer {
     public static void main(String[] args) {
         try {
             DatabaseConnection.initializeDatabase();
-            new DepartmentRepository().seedDefaultDepartments();
-            new ResourceRepository().seedDefaultResources();
             startServer();
         } catch (SQLException exception) {
             System.err.println("Failed to initialize database: " + exception.getMessage());

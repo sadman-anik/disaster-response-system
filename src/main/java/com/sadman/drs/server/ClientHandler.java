@@ -1,9 +1,10 @@
 package com.sadman.drs.server;
 
-import com.sadman.drs.protocol.ServerAction;import com.sadman.drs.model.User;import com.sadman.drs.protocol.ServerRequest;
+import com.sadman.drs.model.User;
+import com.sadman.drs.protocol.ServerAction;
+import com.sadman.drs.protocol.ServerRequest;
 import com.sadman.drs.protocol.ServerResponse;
 import com.sadman.drs.security.CryptoUtils;
-import com.sadman.drs.server.DRSServerRequestProcessor;
 import com.sadman.drs.server.config.ServerConfig;
 
 import javax.crypto.Cipher;

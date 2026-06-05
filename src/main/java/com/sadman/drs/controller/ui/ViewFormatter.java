@@ -3,6 +3,7 @@ package com.sadman.drs.controller.ui;
 import com.sadman.drs.model.DisasterReport;
 import com.sadman.drs.model.Resource;
 import com.sadman.drs.model.ResponseTask;
+import com.sadman.drs.model.StatusValues;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.PieChart;
@@ -66,7 +67,7 @@ public class ViewFormatter {
     public static ObservableList<PieChart.Data> createReportStatusChartData(List<DisasterReport> reports) {
         ObservableList<PieChart.Data> chartData = FXCollections.observableArrayList();
 
-        for (String status : List.of("Reported", "Assessed", "In Progress", "Completed", "Closed")) {
+        for (String status : StatusValues.REPORT_STATUSES) {
             long count = reports.stream()
                     .filter(report -> status.equalsIgnoreCase(report.getStatus()))
                     .count();
@@ -87,7 +88,7 @@ public class ViewFormatter {
         series.setName("In Progress Tasks");
 
         tasks.stream()
-                .filter(task -> "In Progress".equalsIgnoreCase(task.getStatus()))
+                .filter(task -> StatusValues.IN_PROGRESS.equalsIgnoreCase(task.getStatus()))
                 .collect(Collectors.groupingBy(ResponseTask::getDepartmentName, Collectors.counting()))
                 .forEach((department, count) -> series.getData().add(new XYChart.Data<>(department, count)));
 

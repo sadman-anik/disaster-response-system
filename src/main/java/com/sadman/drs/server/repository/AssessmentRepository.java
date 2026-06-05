@@ -49,22 +49,26 @@ public class AssessmentRepository {
         List<AssessmentResult> assessments = new ArrayList<>();
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
+            ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
-                assessments.add(new AssessmentResult(
-                        resultSet.getInt("assessment_id"),
-                        resultSet.getInt("report_id"),
-                        resultSet.getString("report_title"),
-                        resultSet.getString("damage_level"),
-                        resultSet.getInt("people_affected"),
-                        resultSet.getBoolean("infrastructure_damage"),
-                        resultSet.getInt("priority_score"),
-                        resultSet.getString("priority_level"),
-                        resultSet.getString("assessment_summary"),
-                        resultSet.getString("created_at")
-                ));
+                assessments.add(mapResultSet(resultSet));
             }
         }
         return assessments;
+    }
+
+    private AssessmentResult mapResultSet(ResultSet resultSet) throws SQLException {
+        return new AssessmentResult(
+                resultSet.getInt("assessment_id"),
+                resultSet.getInt("report_id"),
+                resultSet.getString("report_title"),
+                resultSet.getString("damage_level"),
+                resultSet.getInt("people_affected"),
+                resultSet.getBoolean("infrastructure_damage"),
+                resultSet.getInt("priority_score"),
+                resultSet.getString("priority_level"),
+                resultSet.getString("assessment_summary"),
+                resultSet.getString("created_at")
+        );
     }
 }

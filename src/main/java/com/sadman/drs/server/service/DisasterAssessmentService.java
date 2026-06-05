@@ -2,6 +2,7 @@ package com.sadman.drs.server.service;
 
 import com.sadman.drs.model.AssessmentResult;
 import com.sadman.drs.model.DisasterReport;
+import com.sadman.drs.model.StatusValues;
 
 /**
  * Provides quick assessment and priority calculation for reported disasters.
@@ -13,15 +14,17 @@ public class DisasterAssessmentService {
         String level = normalize(severity);
 
         if (level.equals("critical")) {
-            return "Critical";
+            return StatusValues.CRITICAL;
         }
         if (level.equals("high")) {
-            return type.equals("fire") || type.equals("earthquake") || type.equals("flood") ? "High" : "Medium";
+            return type.equals("fire") || type.equals("earthquake") || type.equals("flood")
+                    ? StatusValues.HIGH
+                    : StatusValues.MEDIUM;
         }
         if (level.equals("medium")) {
-            return "Medium";
+            return StatusValues.MEDIUM;
         }
-        return "Low";
+        return StatusValues.LOW;
     }
 
     public AssessmentResult assessDisaster(DisasterReport report, String damageLevel,
@@ -64,15 +67,15 @@ public class DisasterAssessmentService {
 
     public String convertScoreToPriority(int score) {
         if (score >= 80) {
-            return "Critical";
+            return StatusValues.CRITICAL;
         }
         if (score >= 60) {
-            return "High";
+            return StatusValues.HIGH;
         }
         if (score >= 35) {
-            return "Medium";
+            return StatusValues.MEDIUM;
         }
-        return "Low";
+        return StatusValues.LOW;
     }
 
     private String buildAssessmentSummary(DisasterReport report, String damageLevel,

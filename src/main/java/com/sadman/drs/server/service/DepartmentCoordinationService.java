@@ -3,6 +3,7 @@ package com.sadman.drs.server.service;
 import com.sadman.drs.model.Department;
 import com.sadman.drs.model.DisasterReport;
 import com.sadman.drs.model.ResponseTask;
+import com.sadman.drs.model.StatusValues;
 import com.sadman.drs.server.repository.DepartmentRepository;
 import com.sadman.drs.server.repository.ResponseTaskRepository;
 
@@ -89,7 +90,7 @@ public class DepartmentCoordinationService {
                 int departmentId = department.get().getDepartmentId();
                 if (!responseTaskRepository.existsTask(report.getReportId(), departmentId, activity)) {
                     ResponseTask task = new ResponseTask(report.getReportId(), departmentId,
-                            activity, taskDescription, report.getPriorityLevel(), "Pending");
+                            activity, taskDescription, report.getPriorityLevel(), StatusValues.PENDING);
                     task.setDepartmentName(departmentName);
                     createdTasks.add(responseTaskRepository.save(task));
                 }

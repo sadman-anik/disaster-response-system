@@ -52,14 +52,9 @@ public class ResourceRepository {
         List<Resource> resources = new ArrayList<>();
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
+            ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
-                resources.add(new Resource(
-                        resultSet.getInt("resource_id"),
-                        resultSet.getString("resource_name"),
-                        resultSet.getString("category"),
-                        resultSet.getInt("quantity_available")
-                ));
+                resources.add(mapResourceResultSet(resultSet));
             }
         }
         return resources;
@@ -112,19 +107,32 @@ public class ResourceRepository {
         List<ResourceAllocation> allocations = new ArrayList<>();
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
+            ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
-                allocations.add(new ResourceAllocation(
-                        resultSet.getInt("allocation_id"),
-                        resultSet.getInt("report_id"),
-                        resultSet.getInt("resource_id"),
-                        resultSet.getString("resource_name"),
-                        resultSet.getInt("quantity_allocated"),
-                        resultSet.getString("notes"),
-                        resultSet.getString("created_at")
-                ));
+                allocations.add(mapAllocationResultSet(resultSet));
             }
         }
         return allocations;
+    }
+
+    private Resource mapResourceResultSet(ResultSet resultSet) throws SQLException {
+        return new Resource(
+                resultSet.getInt("resource_id"),
+                resultSet.getString("resource_name"),
+                resultSet.getString("category"),
+                resultSet.getInt("quantity_available")
+        );
+    }
+
+    private ResourceAllocation mapAllocationResultSet(ResultSet resultSet) throws SQLException {
+        return new ResourceAllocation(
+                resultSet.getInt("allocation_id"),
+                resultSet.getInt("report_id"),
+                resultSet.getInt("resource_id"),
+                resultSet.getString("resource_name"),
+                resultSet.getInt("quantity_allocated"),
+                resultSet.getString("notes"),
+                resultSet.getString("created_at")
+        );
     }
 }
