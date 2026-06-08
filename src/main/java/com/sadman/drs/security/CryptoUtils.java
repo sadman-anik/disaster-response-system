@@ -12,7 +12,7 @@ import java.security.GeneralSecurityException;
 public final class CryptoUtils {
     private static final String CIPHER_ALGORITHM = "AES/CBC/PKCS5Padding";
     private static final String KEY_ALGORITHM = "AES";
-    private static final String INIT_VECTOR = "DRSInitVector1234";
+    private static final String INIT_VECTOR = "DRSInitVector123";
 
     private CryptoUtils() {
     }
