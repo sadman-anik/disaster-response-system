@@ -351,6 +351,18 @@ Only change these values according to your local MySQL setup:
 database.username=root
 database.password=your_mysql_password
 ```
+
+When the application starts, it also seeds these default application users if they do not already exist:
+
+| Username | Password | Role |
+| --- | --- | --- |
+| `admin` | `Admin@123` | Admin |
+| `reporter` | `Reporter@123` | Reporter |
+| `assessment_officer` | `Assessment@123` | Assessment Officer |
+| `resource_officer` | `Resource@123` | Resource Officer |
+| `department_officer` | `Department@123` | Department Officer |
+| `auditor` | `Auditor@123` | Auditor |
+
 ---
 
 ## How to Run the Project
