@@ -13,8 +13,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
-import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -27,8 +27,12 @@ public class LoginController {
     private static final int SERVER_RETRY_DELAY_MILLIS = 2000;
     private static final String SUCCESS_STYLE = "success-label";
     private static final String ERROR_STYLE = "error-label";
+    private static final String SERVER_CONNECTED_STYLE = "server-connected";
+    private static final String SERVER_DISCONNECTED_STYLE = "server-disconnected";
 
-    @FXML private TabPane authTabPane;
+    @FXML private VBox loginPane;
+    @FXML private VBox registerPane;
+    @FXML private Label serverStatusLabel;
 
     @FXML private TextField loginUsernameField;
     @FXML private PasswordField loginPasswordField;
@@ -55,8 +59,9 @@ public class LoginController {
     private void initialize() {
         registerRoleComboBox.getItems().addAll("REPORTER", "ASSESSMENT_OFFICER", "RESOURCE_OFFICER", "DEPARTMENT_OFFICER", "AUDITOR");
         registerRoleComboBox.getSelectionModel().selectFirst();
-        loginStatusLabel.setText("Connecting to DRS server...");
-        registerStatusLabel.setText("Create a REPORTER, ASSESSMENT_OFFICER, RESOURCE_OFFICER, DEPARTMENT_OFFICER, or AUDITOR account.");
+        setValidationMessage(loginStatusLabel, "", false);
+        setValidationMessage(registerStatusLabel, "", false);
+        updateServerStatus("Connecting to DRS server", false);
         registerPasswordField.textProperty().addListener((observable, oldValue, newValue) -> updateRegistrationValidation());
         registerConfirmPasswordField.textProperty().addListener((observable, oldValue, newValue) -> updateRegistrationValidation());
         updateRegistrationValidation();
@@ -70,17 +75,17 @@ public class LoginController {
             protected Void call() throws InterruptedException {
                 while (!isCancelled()) {
                     try {
-                        updateMessage("Connecting to DRS server...");
+                        updateMessage("✕ Connecting to DRS server...");
                         clientService.connect();
                         if (clientService.pingServer()) {
-                            updateMessage("Connected. Login or register to continue.");
+                            updateMessage("✓ Connected to DRS server");
                             return null;
                         }
                         clientService.close();
-                        updateMessage("Waiting for DRS server...");
+                        updateMessage("✕ Waiting for DRS server");
                     } catch (IOException | ClassNotFoundException | RuntimeException exception) {
                         clientService.close();
-                        updateMessage("Waiting for DRS server: " + exception.getMessage());
+                        updateMessage("✕ Waiting for DRS server: " + exception.getMessage());
                     }
                     Thread.sleep(SERVER_RETRY_DELAY_MILLIS);
                 }
@@ -88,33 +93,58 @@ public class LoginController {
             }
         };
 
-        loginStatusLabel.textProperty().bind(connectTask.messageProperty());
+        serverStatusLabel.textProperty().bind(connectTask.messageProperty());
         connectTask.setOnSucceeded(event -> {
-            loginStatusLabel.textProperty().unbind();
+            serverStatusLabel.textProperty().unbind();
             if (clientService.isConnected()) {
                 serverConnected = true;
-                loginStatusLabel.setText("Connected. Login or register to continue.");
-                registerStatusLabel.setText("Create a REPORTER, ASSESSMENT_OFFICER, RESOURCE_OFFICER, DEPARTMENT_OFFICER, or AUDITOR account.");
+                updateServerStatus("Connected to DRS server", true);
             } else {
                 serverConnected = false;
-                loginStatusLabel.setText("Server connection stopped.");
-                registerStatusLabel.setText("Server connection stopped.");
+                updateServerStatus("Server connection stopped", false);
             }
             updateAuthControls();
         });
         connectTask.setOnFailed(event -> {
             Throwable exception = connectTask.getException();
-            loginStatusLabel.textProperty().unbind();
+            serverStatusLabel.textProperty().unbind();
             clientService.close();
             serverConnected = false;
-            loginStatusLabel.setText("Server connection failed: " + exception.getMessage());
-            registerStatusLabel.setText("Server connection failed.");
+            updateServerStatus("Server connection failed: " + exception.getMessage(), false);
             updateAuthControls();
         });
 
         Thread connectionThread = new Thread(connectTask, "drs-login-server-connect");
         connectionThread.setDaemon(true);
         connectionThread.start();
+    }
+
+    @FXML
+    private void showRegisterForm() {
+        setVisibleAuthPane(registerPane);
+        setValidationMessage(loginStatusLabel, "", false);
+        registerUsernameField.requestFocus();
+    }
+
+    @FXML
+    private void showLoginForm() {
+        setVisibleAuthPane(loginPane);
+        setValidationMessage(registerStatusLabel, "", false);
+        loginUsernameField.requestFocus();
+    }
+
+    private void setVisibleAuthPane(VBox activePane) {
+        boolean loginVisible = activePane == loginPane;
+        loginPane.setVisible(loginVisible);
+        loginPane.setManaged(loginVisible);
+        registerPane.setVisible(!loginVisible);
+        registerPane.setManaged(!loginVisible);
+    }
+
+    private void updateServerStatus(String message, boolean connected) {
+        serverStatusLabel.setText((connected ? "✓ " : "✕ ") + message);
+        serverStatusLabel.getStyleClass().removeAll(SERVER_CONNECTED_STYLE, SERVER_DISCONNECTED_STYLE);
+        serverStatusLabel.getStyleClass().add(connected ? SERVER_CONNECTED_STYLE : SERVER_DISCONNECTED_STYLE);
     }
 
     private void updateAuthControls() {
@@ -153,10 +183,18 @@ public class LoginController {
         label.getStyleClass().add(valid ? SUCCESS_STYLE : ERROR_STYLE);
     }
 
+    private void setValidationMessage(Label label, String message, boolean error) {
+        label.setText(message);
+        label.getStyleClass().removeAll(SUCCESS_STYLE, ERROR_STYLE);
+        if (!message.isEmpty()) {
+            label.getStyleClass().add(error ? ERROR_STYLE : SUCCESS_STYLE);
+        }
+    }
+
     @FXML
     private void handleLogin() {
         if (!clientService.isConnected()) {
-            loginStatusLabel.setText("Server is not connected yet.");
+            setValidationMessage(loginStatusLabel, "Server is not connected yet.", true);
             return;
         }
 
@@ -164,26 +202,26 @@ public class LoginController {
         String password = loginPasswordField.getText();
 
         if (FormValueHelper.isBlank(username) || FormValueHelper.isBlank(password)) {
-            loginStatusLabel.setText("Username and password are required.");
+            setValidationMessage(loginStatusLabel, "Username and password are required.", true);
             return;
         }
 
         try {
             User user = clientService.authenticate(username, password);
             if (user == null) {
-                loginStatusLabel.setText("Invalid username or password.");
+                setValidationMessage(loginStatusLabel, "Invalid username or password.", true);
                 return;
             }
             openMainStage(user);
         } catch (IOException | ClassNotFoundException | IllegalStateException exception) {
-            loginStatusLabel.setText("Login failed: " + exception.getMessage());
+            setValidationMessage(loginStatusLabel, "Login failed: " + exception.getMessage(), true);
         }
     }
 
     @FXML
     private void handleRegister() {
         if (!clientService.isConnected()) {
-            registerStatusLabel.setText("Server is not connected yet.");
+            setValidationMessage(registerStatusLabel, "Server is not connected yet.", true);
             return;
         }
 
@@ -194,26 +232,26 @@ public class LoginController {
 
         if (FormValueHelper.isBlank(username) || FormValueHelper.isBlank(password)
                 || FormValueHelper.isBlank(confirmPassword)) {
-            registerStatusLabel.setText("All registration fields are required.");
+            setValidationMessage(registerStatusLabel, "All registration fields are required.", true);
             return;
         }
         if (!password.equals(confirmPassword)) {
-            registerStatusLabel.setText("Passwords do not match.");
+            setValidationMessage(registerStatusLabel, "Passwords do not match.", true);
             return;
         }
         if (!isRegistrationPasswordValid()) {
-            registerStatusLabel.setText("Password must meet all requirements and match confirmation.");
+            setValidationMessage(registerStatusLabel, "Password must meet all requirements and match confirmation.", true);
             return;
         }
         try {
             User user = clientService.registerUser(username, password, role);
             if (user == null) {
-                registerStatusLabel.setText("Username already exists. Choose another.");
+                setValidationMessage(registerStatusLabel, "Username already exists. Choose another.", true);
                 return;
             }
             showRegistrationSuccess(username);
         } catch (IOException | ClassNotFoundException | IllegalStateException exception) {
-            registerStatusLabel.setText("Registration failed: " + exception.getMessage());
+            setValidationMessage(registerStatusLabel, "Registration failed: " + exception.getMessage(), true);
         }
     }
 
@@ -225,10 +263,10 @@ public class LoginController {
         registerPasswordField.clear();
         registerConfirmPasswordField.clear();
         registerRoleComboBox.getSelectionModel().selectFirst();
-        registerStatusLabel.setText("Create a REPORTER, ASSESSMENT_OFFICER, RESOURCE_OFFICER, DEPARTMENT_OFFICER, or AUDITOR account.");
+        setValidationMessage(registerStatusLabel, "", false);
         updateRegistrationValidation();
-        authTabPane.getSelectionModel().selectFirst();
-        loginStatusLabel.setText("Connected. Login or register to continue.");
+        showLoginForm();
+        setValidationMessage(loginStatusLabel, "Registration successful. Please enter your password.", false);
         loginPasswordField.requestFocus();
     }
 
@@ -248,7 +286,7 @@ public class LoginController {
             stage.setMinHeight(800);
             stage.show();
         } catch (IOException exception) {
-            loginStatusLabel.setText("Unable to load main application: " + exception.getMessage());
+            setValidationMessage(loginStatusLabel, "Unable to load main application: " + exception.getMessage(), true);
         }
     }
 }

@@ -17,12 +17,16 @@ public class DRSServer {
 
     public static void main(String[] args) {
         try {
-            DatabaseConnection.initializeDatabase();
-            startServer();
+            start();
         } catch (SQLException exception) {
             System.err.println("Failed to initialize database: " + exception.getMessage());
             exception.printStackTrace();
         }
+    }
+
+    public static void start() throws SQLException {
+        DatabaseConnection.initializeDatabase();
+        startServer();
     }
 
     private static void startServer() {

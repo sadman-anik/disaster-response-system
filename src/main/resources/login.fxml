@@ -7,67 +7,73 @@
 <BorderPane xmlns="http://javafx.com/javafx/17.0.10" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.sadman.drs.controller.LoginController" styleClass="root-pane">
     <center>
-        <VBox alignment="CENTER" spacing="16" styleClass="auth-card">
+        <VBox alignment="CENTER" spacing="16" styleClass="auth-card" maxWidth="560">
             <padding>
                 <Insets top="32" right="32" bottom="32" left="32" />
             </padding>
             <Label text="Disaster Response System" styleClass="page-title" />
-            <TabPane fx:id="authTabPane" prefWidth="500" prefHeight="470">
-                <tabs>
-                    <Tab text="Login">
-                        <AnchorPane>
-                            <children>
-                                <GridPane hgap="10" vgap="12" AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20"
-                                          AnchorPane.rightAnchor="20">
-                                    <Label text="Username:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
-                                    <TextField fx:id="loginUsernameField" promptText="Enter username" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+            <StackPane prefWidth="500" maxWidth="500" prefHeight="470">
+                <VBox fx:id="loginPane" alignment="CENTER" spacing="16">
+                    <GridPane alignment="CENTER" hgap="10" vgap="12">
+                        <Label text="Username:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                        <TextField fx:id="loginUsernameField" promptText="Enter username" prefWidth="260" GridPane.rowIndex="0" GridPane.columnIndex="1" />
 
-                                    <Label text="Password:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
-                                    <PasswordField fx:id="loginPasswordField" promptText="Enter password" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+                        <Label text="Password:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                        <PasswordField fx:id="loginPasswordField" promptText="Enter password" prefWidth="260" GridPane.rowIndex="1" GridPane.columnIndex="1" />
 
-                                    <Label fx:id="loginStatusLabel" text="Please sign in." styleClass="status-label" GridPane.rowIndex="2" GridPane.columnIndex="0" GridPane.columnSpan="2" />
+                        <Label fx:id="loginStatusLabel" text="" styleClass="status-label" GridPane.rowIndex="2" GridPane.columnIndex="0" GridPane.columnSpan="2" />
 
-                                    <Button fx:id="loginButton" text="Login" onAction="#handleLogin" styleClass="primary-button"
-                                            GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
-                                </GridPane>
-                            </children>
-                        </AnchorPane>
-                    </Tab>
-                    <Tab text="Register">
-                        <AnchorPane>
-                            <children>
-                                <GridPane hgap="10" vgap="12" AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20"
-                                          AnchorPane.rightAnchor="20">
-                                    <Label text="Username:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
-                                    <TextField fx:id="registerUsernameField" promptText="Choose a username" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+                        <HBox alignment="CENTER_LEFT" spacing="14" prefWidth="340" GridPane.rowIndex="3" GridPane.columnIndex="0" GridPane.columnSpan="2">
+                            <Button fx:id="loginButton" text="Login" onAction="#handleLogin" styleClass="primary-button" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <HBox alignment="CENTER" spacing="8">
+                                <Label text="New user?" styleClass="status-label" />
+                                <Button text="Register" onAction="#showRegisterForm" styleClass="secondary-button" />
+                            </HBox>
+                        </HBox>
+                    </GridPane>
+                </VBox>
 
-                                    <Label text="Password:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
-                                    <PasswordField fx:id="registerPasswordField" promptText="Choose a password" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+                <VBox fx:id="registerPane" alignment="CENTER" spacing="16" visible="false" managed="false">
+                    <GridPane alignment="CENTER" hgap="10" vgap="12">
+                        <Label text="Username:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                        <TextField fx:id="registerUsernameField" promptText="Choose a username" prefWidth="260" GridPane.rowIndex="0" GridPane.columnIndex="1" />
 
-                                    <Label text="Confirm Password:" GridPane.rowIndex="2" GridPane.columnIndex="0" />
-                                    <PasswordField fx:id="registerConfirmPasswordField" promptText="Confirm password" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+                        <Label text="Password:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                        <PasswordField fx:id="registerPasswordField" promptText="Choose a password" prefWidth="260" GridPane.rowIndex="1" GridPane.columnIndex="1" />
 
-                                    <VBox spacing="2" GridPane.rowIndex="3" GridPane.columnIndex="1">
-                                        <Label fx:id="passwordLengthLabel" text="At least 8 characters" styleClass="requirement-label" />
-                                        <Label fx:id="passwordUppercaseLabel" text="Contains uppercase letter" styleClass="requirement-label" />
-                                        <Label fx:id="passwordLowercaseLabel" text="Contains lowercase letter" styleClass="requirement-label" />
-                                        <Label fx:id="passwordSpecialLabel" text="Contains special character" styleClass="requirement-label" />
-                                        <Label fx:id="passwordMatchLabel" text="Passwords match" styleClass="requirement-label" />
-                                    </VBox>
+                        <Label text="Confirm Password:" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+                        <PasswordField fx:id="registerConfirmPasswordField" promptText="Confirm password" prefWidth="260" GridPane.rowIndex="2" GridPane.columnIndex="1" />
 
-                                    <Label text="Role:" GridPane.rowIndex="4" GridPane.columnIndex="0" />
-                                    <ComboBox fx:id="registerRoleComboBox" prefWidth="200" GridPane.rowIndex="4" GridPane.columnIndex="1" />
+                        <VBox spacing="2" GridPane.rowIndex="3" GridPane.columnIndex="1">
+                            <Label fx:id="passwordLengthLabel" text="At least 8 characters" styleClass="requirement-label" />
+                            <Label fx:id="passwordUppercaseLabel" text="Contains uppercase letter" styleClass="requirement-label" />
+                            <Label fx:id="passwordLowercaseLabel" text="Contains lowercase letter" styleClass="requirement-label" />
+                            <Label fx:id="passwordSpecialLabel" text="Contains special character" styleClass="requirement-label" />
+                            <Label fx:id="passwordMatchLabel" text="Passwords match" styleClass="requirement-label" />
+                        </VBox>
 
-                                    <Label fx:id="registerStatusLabel" text="Create a viewer or responder account." styleClass="status-label" GridPane.rowIndex="5" GridPane.columnIndex="0" GridPane.columnSpan="2" />
+                        <Label text="Role:" GridPane.rowIndex="4" GridPane.columnIndex="0" />
+                        <ComboBox fx:id="registerRoleComboBox" prefWidth="260" GridPane.rowIndex="4" GridPane.columnIndex="1" />
 
-                                    <Button fx:id="registerButton" text="Register" onAction="#handleRegister" styleClass="primary-button"
-                                            GridPane.rowIndex="6" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
-                                </GridPane>
-                            </children>
-                        </AnchorPane>
-                    </Tab>
-                </tabs>
-            </TabPane>
+                        <Label fx:id="registerStatusLabel" text="" styleClass="status-label" GridPane.rowIndex="5" GridPane.columnIndex="0" GridPane.columnSpan="2" />
+
+                        <HBox alignment="CENTER_RIGHT" spacing="8" GridPane.rowIndex="6" GridPane.columnIndex="1">
+                            <Button text="Back" onAction="#showLoginForm" styleClass="secondary-button" />
+                            <Button fx:id="registerButton" text="Register" onAction="#handleRegister" styleClass="primary-button" />
+                        </HBox>
+                    </GridPane>
+                </VBox>
+            </StackPane>
         </VBox>
     </center>
+
+    <bottom>
+        <HBox alignment="CENTER_RIGHT">
+            <padding>
+                <Insets top="0" right="24" bottom="20" left="24" />
+            </padding>
+            <Label fx:id="serverStatusLabel" text="✕ Connecting to DRS server" styleClass="server-status-pill" />
+        </HBox>
+    </bottom>
 </BorderPane>

@@ -367,9 +367,27 @@ When the application starts, it also seeds these default application users if th
 
 ## How to Run the Project
 
-Open the project folder in Visual Studio Code.
+Open the project folder in Visual Studio Code or NetBeans.
 
 Make sure MySQL Server is running.
+
+### NetBeans Main Class
+
+When opening the project in NetBeans, the IDE may show three runnable main classes:
+
+| Main class | Purpose |
+| --- | --- |
+| `com.sadman.drs.DRSLauncher` | Starts both the DRS server and the JavaFX client. Use this for normal running. |
+| `com.sadman.drs.client.MainApp` | Starts only the JavaFX client. The server must already be running separately. |
+| `com.sadman.drs.server.DRSServer` | Starts only the backend server on `localhost:9090`. |
+
+For normal use and marking, choose:
+
+```text
+com.sadman.drs.DRSLauncher
+```
+
+This single launcher starts the server on port `9090` and then opens the login window.
 
 You can run the app directly with Maven from the project root:
 
