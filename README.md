@@ -364,6 +364,8 @@ When the application starts, it also seeds these default application users if th
 | `department_officer` | `Department@123` | Department Officer |
 | `auditor` | `Auditor@123` | Auditor |
 
+The project also provides `database-schema.sql` for manual marking/setup. This script creates the database tables and populates the same default users, departments, and resources. It is safe if both setup methods are used: the Java startup seeder checks for existing data, and the SQL script uses duplicate-safe insert statements.
+
 ---
 
 ## How to Run the Project
