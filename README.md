@@ -41,18 +41,19 @@ The code is organised into logical packages:
 This separation keeps the JavaFX UI layer separate from networking, transport, and backend logic.
 
 ## Secure Transport
-The client/server communication channel is encrypted using AES-based transport protection. Requests and responses are wrapped in an encrypted stream so disaster data is not sent in plaintext over the socket connection.
+The client/server communication channel uses AES-based transport protection. Each `ServerRequest` and `ServerResponse` is encrypted as a `SealedObject` before being written to the socket, so disaster data is not sent as plaintext payload objects.
 
 ## Example Client → Server → Client Flow
 
-1. The JavaFX controller builds a `DisasterReport` object from the report form.
-2. `DRSClientService.submitReport(report)` wraps it in a `ServerRequest` with `ServerAction.SUBMIT_REPORT`.
-3. `DRSClient` sends that request to the server over the socket connection.
-4. `DRSServerRequestProcessor.processRequest(request)` receives the request on the server.
-5. `handleSubmitReport(request.getPayload())` extracts the `DisasterReport` payload and saves it to the database.
-6. The server returns `ServerResponse.success("Report submitted", savedReport)`.
-7. The client receives the response and `DRSClientService.submitReport(...)` returns the saved `DisasterReport` back to the controller.
-8. The controller updates the UI with the saved report details.
+1. `DRSLauncher` starts the DRS socket server on `localhost:9090` and then opens the JavaFX client.
+2. The JavaFX controller builds a `DisasterReport` object from the report form.
+3. `DRSClientService.submitReport(report)` wraps it in a `ServerRequest` with `ServerAction.SUBMIT_REPORT`.
+4. `DRSClient` encrypts the request using `CryptoUtils.seal(...)` and sends the sealed object over the socket connection.
+5. `ClientHandler` receives the sealed object, decrypts it, and passes the `ServerRequest` to `DRSServerRequestProcessor.processRequest(...)`.
+6. `handleSubmitReport(request.getPayload())` extracts the `DisasterReport` payload and saves it to the database.
+7. The server creates `ServerResponse.success("Report submitted", savedReport)`, encrypts it, and sends it back to the client.
+8. `DRSClient` decrypts the response and `DRSClientService.submitReport(...)` returns the saved `DisasterReport` back to the controller.
+9. The controller updates the UI with the saved report details.
 
 ## Main Features
 
