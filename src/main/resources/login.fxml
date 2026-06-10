@@ -12,7 +12,7 @@
                 <Insets top="32" right="32" bottom="32" left="32" />
             </padding>
             <Label text="Disaster Response System" styleClass="page-title" />
-            <TabPane fx:id="authTabPane" prefWidth="500" prefHeight="420">
+            <TabPane fx:id="authTabPane" prefWidth="500" prefHeight="470">
                 <tabs>
                     <Tab text="Login">
                         <AnchorPane>
@@ -27,7 +27,7 @@
 
                                     <Label fx:id="loginStatusLabel" text="Please sign in." styleClass="status-label" GridPane.rowIndex="2" GridPane.columnIndex="0" GridPane.columnSpan="2" />
 
-                                    <Button text="Login" onAction="#handleLogin" styleClass="primary-button"
+                                    <Button fx:id="loginButton" text="Login" onAction="#handleLogin" styleClass="primary-button"
                                             GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
                                 </GridPane>
                             </children>
@@ -47,13 +47,21 @@
                                     <Label text="Confirm Password:" GridPane.rowIndex="2" GridPane.columnIndex="0" />
                                     <PasswordField fx:id="registerConfirmPasswordField" promptText="Confirm password" GridPane.rowIndex="2" GridPane.columnIndex="1" />
 
-                                    <Label text="Role:" GridPane.rowIndex="3" GridPane.columnIndex="0" />
-                                    <ComboBox fx:id="registerRoleComboBox" prefWidth="200" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+                                    <VBox spacing="2" GridPane.rowIndex="3" GridPane.columnIndex="1">
+                                        <Label fx:id="passwordLengthLabel" text="At least 8 characters" styleClass="requirement-label" />
+                                        <Label fx:id="passwordUppercaseLabel" text="Contains uppercase letter" styleClass="requirement-label" />
+                                        <Label fx:id="passwordLowercaseLabel" text="Contains lowercase letter" styleClass="requirement-label" />
+                                        <Label fx:id="passwordSpecialLabel" text="Contains special character" styleClass="requirement-label" />
+                                        <Label fx:id="passwordMatchLabel" text="Passwords match" styleClass="requirement-label" />
+                                    </VBox>
 
-                                    <Label fx:id="registerStatusLabel" text="Create a viewer or responder account." styleClass="status-label" GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.columnSpan="2" />
+                                    <Label text="Role:" GridPane.rowIndex="4" GridPane.columnIndex="0" />
+                                    <ComboBox fx:id="registerRoleComboBox" prefWidth="200" GridPane.rowIndex="4" GridPane.columnIndex="1" />
 
-                                    <Button text="Register" onAction="#handleRegister" styleClass="primary-button"
-                                            GridPane.rowIndex="5" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
+                                    <Label fx:id="registerStatusLabel" text="Create a viewer or responder account." styleClass="status-label" GridPane.rowIndex="5" GridPane.columnIndex="0" GridPane.columnSpan="2" />
+
+                                    <Button fx:id="registerButton" text="Register" onAction="#handleRegister" styleClass="primary-button"
+                                            GridPane.rowIndex="6" GridPane.columnIndex="1" GridPane.halignment="RIGHT" />
                                 </GridPane>
                             </children>
                         </AnchorPane>

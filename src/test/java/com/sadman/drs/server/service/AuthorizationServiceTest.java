@@ -13,8 +13,10 @@ class AuthorizationServiceTest {
 
     @Test
     void publicActionsDoNotRequireAuthenticatedUser() {
+        assertFalse(authorizationService.requiresAuthentication(ServerAction.PING));
         assertFalse(authorizationService.requiresAuthentication(ServerAction.AUTHENTICATE));
         assertFalse(authorizationService.requiresAuthentication(ServerAction.REGISTER_USER));
+        assertTrue(authorizationService.isAuthorized(null, ServerAction.PING));
         assertTrue(authorizationService.isAuthorized(null, ServerAction.AUTHENTICATE));
     }
 

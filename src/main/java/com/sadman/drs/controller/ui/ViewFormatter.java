@@ -103,14 +103,24 @@ public class ViewFormatter {
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Available Resources");
 
-        for (Resource resource : resources) {
-            series.getData().add(new XYChart.Data<>(resource.getResourceName(), resource.getQuantityAvailable()));
-        }
+        resources.stream()
+                .sorted((first, second) -> Integer.compare(second.getQuantityAvailable(), first.getQuantityAvailable()))
+                .forEach(resource -> series.getData().add(new XYChart.Data<>(
+                        formatResourceChartLabel(resource),
+                        resource.getQuantityAvailable())));
 
         if (series.getData().isEmpty()) {
             series.getData().add(new XYChart.Data<>("No resources", 0));
         }
 
         return series;
+    }
+
+    private static String formatResourceChartLabel(Resource resource) {
+        String resourceName = resource.getResourceName();
+        if (resourceName == null || resourceName.isBlank()) {
+            return "Unnamed resource #" + resource.getResourceId();
+        }
+        return resourceName;
     }
 }

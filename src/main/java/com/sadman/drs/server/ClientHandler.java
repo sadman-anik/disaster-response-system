@@ -7,9 +7,7 @@ import com.sadman.drs.protocol.ServerResponse;
 import com.sadman.drs.security.CryptoUtils;
 import com.sadman.drs.server.config.ServerConfig;
 
-import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
-import javax.crypto.CipherOutputStream;
+import javax.crypto.SealedObject;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -34,23 +32,23 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
-        Cipher encryptCipher = CryptoUtils.createCipher(Cipher.ENCRYPT_MODE, ServerConfig.ENCRYPTION_KEY);
-        Cipher decryptCipher = CryptoUtils.createCipher(Cipher.DECRYPT_MODE, ServerConfig.ENCRYPTION_KEY);
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(clientSocket.getOutputStream())) {
+            outputStream.flush();
+            try (ObjectInputStream inputStream = new ObjectInputStream(clientSocket.getInputStream())) {
 
-        try (ObjectOutputStream outputStream = new ObjectOutputStream(new CipherOutputStream(clientSocket.getOutputStream(), encryptCipher));
-             ObjectInputStream inputStream = new ObjectInputStream(new CipherInputStream(clientSocket.getInputStream(), decryptCipher))) {
-
-            while (!clientSocket.isClosed()) {
-                try {
-                    ServerRequest request = (ServerRequest) inputStream.readObject();
-                    ServerResponse response = requestProcessor.processRequest(request, authenticatedUser);
-                    if (request.getAction() == ServerAction.AUTHENTICATE && response.isSuccess() && response.getPayload() instanceof User user) {
-                        setAuthenticatedUser(user);
+                while (!clientSocket.isClosed()) {
+                    try {
+                        ServerRequest request = (ServerRequest) CryptoUtils.unseal(
+                                (SealedObject) inputStream.readObject(), ServerConfig.ENCRYPTION_KEY);
+                        ServerResponse response = requestProcessor.processRequest(request, authenticatedUser);
+                        if (request.getAction() == ServerAction.AUTHENTICATE && response.isSuccess() && response.getPayload() instanceof User user) {
+                            setAuthenticatedUser(user);
+                        }
+                        outputStream.writeObject(CryptoUtils.seal(response, ServerConfig.ENCRYPTION_KEY));
+                        outputStream.flush();
+                    } catch (EOFException eofException) {
+                        break;
                     }
-                    outputStream.writeObject(response);
-                    outputStream.flush();
-                } catch (EOFException eofException) {
-                    break;
                 }
             }
         } catch (IOException | ClassNotFoundException exception) {

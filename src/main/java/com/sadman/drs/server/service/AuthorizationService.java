@@ -14,6 +14,7 @@ import java.util.Set;
  */
 public class AuthorizationService {
     private static final Set<ServerAction> PUBLIC_ACTIONS = EnumSet.of(
+            ServerAction.PING,
             ServerAction.AUTHENTICATE,
             ServerAction.REGISTER_USER
     );

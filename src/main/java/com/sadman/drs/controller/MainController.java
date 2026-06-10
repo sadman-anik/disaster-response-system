@@ -22,8 +22,12 @@ import com.sadman.drs.model.ResourceAllocation;
 import com.sadman.drs.model.ResponseTask;
 import com.sadman.drs.model.User;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -34,7 +38,9 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -63,6 +69,7 @@ public class MainController {
     @FXML private PieChart reportStatusChart;
     @FXML private BarChart<String, Number> taskDepartmentChart;
     @FXML private BarChart<String, Number> resourceAvailabilityChart;
+    @FXML private CategoryAxis resourceAxis;
 
     @FXML private TextField reportTitleField;
     @FXML private ComboBox<String> disasterTypeComboBox;
@@ -245,6 +252,7 @@ public class MainController {
 
         initializeDuplicateCheckWorkflow();
         initializeFeatureWorkflows();
+        resourceAxis.setTickLabelRotation(-35);
     }
 
     public void initializeWithClient(DRSClientService clientService, User currentUser) {
@@ -504,6 +512,29 @@ public class MainController {
     @FXML
     private void completeSelectedTask() {
         taskWorkflow.completeSelectedTask();
+    }
+
+    @FXML
+    private void handleLogout() {
+        if (clientService != null) {
+            clientService.close();
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/login.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root, 1450, 900);
+            scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+
+            Stage stage = (Stage) userStatusLabel.getScene().getWindow();
+            stage.setTitle("DRS Login - Disaster Response System");
+            stage.setMinWidth(1300);
+            stage.setMinHeight(800);
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException exception) {
+            databaseStatusLabel.setText("Logout failed");
+        }
     }
 
     @FXML

@@ -178,6 +178,11 @@
     -fx-font-weight: bold;
 }
 
+.requirement-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
 .text-field, .text-area, .combo-box {
     -fx-background-radius: 10;
     -fx-border-radius: 10;

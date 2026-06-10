@@ -5,18 +5,19 @@ import com.sadman.drs.protocol.ServerResponse;
 import com.sadman.drs.server.config.ServerConfig;
 import com.sadman.drs.security.CryptoUtils;
 
-import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
-import javax.crypto.CipherOutputStream;
+import javax.crypto.SealedObject;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 /**
  * A minimal client abstraction for connecting to the DRS server.
  */
 public class DRSClient implements AutoCloseable {
+
+    private static final int CONNECT_TIMEOUT_MILLIS = 3000;
 
     private final String host;
     private final int port;
@@ -34,20 +35,31 @@ public class DRSClient implements AutoCloseable {
     }
 
     public void connect() throws IOException {
-        socket = new Socket(host, port);
-        Cipher encryptCipher = CryptoUtils.createCipher(Cipher.ENCRYPT_MODE, ServerConfig.ENCRYPTION_KEY);
-        Cipher decryptCipher = CryptoUtils.createCipher(Cipher.DECRYPT_MODE, ServerConfig.ENCRYPTION_KEY);
-        outputStream = new ObjectOutputStream(new CipherOutputStream(socket.getOutputStream(), encryptCipher));
-        inputStream = new ObjectInputStream(new CipherInputStream(socket.getInputStream(), decryptCipher));
+        Socket newSocket = new Socket();
+        try {
+            newSocket.connect(new InetSocketAddress(host, port), CONNECT_TIMEOUT_MILLIS);
+            ObjectOutputStream newOutputStream = new ObjectOutputStream(newSocket.getOutputStream());
+            newOutputStream.flush();
+            ObjectInputStream newInputStream = new ObjectInputStream(newSocket.getInputStream());
+            socket = newSocket;
+            outputStream = newOutputStream;
+            inputStream = newInputStream;
+        } catch (IOException | RuntimeException exception) {
+            try {
+                newSocket.close();
+            } catch (IOException ignored) {
+            }
+            throw exception;
+        }
     }
 
     public ServerResponse sendRequest(ServerRequest request) throws IOException, ClassNotFoundException {
         if (socket == null || socket.isClosed()) {
             throw new IllegalStateException("Client is not connected to the server.");
         }
-        outputStream.writeObject(request);
+        outputStream.writeObject(CryptoUtils.seal(request, ServerConfig.ENCRYPTION_KEY));
         outputStream.flush();
-        return (ServerResponse) inputStream.readObject();
+        return (ServerResponse) CryptoUtils.unseal((SealedObject) inputStream.readObject(), ServerConfig.ENCRYPTION_KEY);
     }
 
     @Override

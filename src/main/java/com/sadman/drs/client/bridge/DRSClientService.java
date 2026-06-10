@@ -39,6 +39,10 @@ public class DRSClientService implements AutoCloseable {
         connected = true;
     }
 
+    public boolean isConnected() {
+        return connected;
+    }
+
     public boolean pingServer() throws IOException, ClassNotFoundException {
         ensureConnected();
         ServerResponse response = client.sendRequest(new ServerRequest(ServerAction.PING, null));

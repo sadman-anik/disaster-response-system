@@ -1,8 +1,11 @@
 package com.sadman.drs.security;
 
 import javax.crypto.Cipher;
+import javax.crypto.SealedObject;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.IOException;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 
@@ -26,6 +29,22 @@ public final class CryptoUtils {
             return cipher;
         } catch (GeneralSecurityException exception) {
             throw new IllegalStateException("Unable to initialize cipher", exception);
+        }
+    }
+
+    public static SealedObject seal(Serializable object, String secretKey) throws IOException {
+        try {
+            return new SealedObject(object, createCipher(Cipher.ENCRYPT_MODE, secretKey));
+        } catch (GeneralSecurityException exception) {
+            throw new IOException("Unable to encrypt transport object.", exception);
+        }
+    }
+
+    public static Object unseal(SealedObject object, String secretKey) throws IOException, ClassNotFoundException {
+        try {
+            return object.getObject(createCipher(Cipher.DECRYPT_MODE, secretKey));
+        } catch (GeneralSecurityException exception) {
+            throw new IOException("Unable to decrypt transport object.", exception);
         }
     }
 }

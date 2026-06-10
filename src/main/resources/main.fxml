@@ -38,7 +38,7 @@
             <Label fx:id="pageTitleLabel" text="Dashboard" styleClass="page-title" />
             <Region HBox.hgrow="ALWAYS" />
             <Label fx:id="userStatusLabel" text="Not logged in" styleClass="user-status-label" />
-            <Button text="Refresh All" onAction="#refreshAllData" styleClass="secondary-button" />
+            <Button text="Logout" onAction="#handleLogout" styleClass="secondary-button" />
         </HBox>
     </top>
 
@@ -86,9 +86,9 @@
                 </HBox>
                 <VBox styleClass="card" spacing="10" VBox.vgrow="ALWAYS">
                     <Label text="Available Resources" styleClass="section-title" />
-                    <BarChart fx:id="resourceAvailabilityChart" legendVisible="false" animated="false" VBox.vgrow="ALWAYS">
+                    <BarChart fx:id="resourceAvailabilityChart" legendVisible="false" animated="false" prefHeight="320" VBox.vgrow="ALWAYS">
                         <xAxis>
-                            <CategoryAxis label="Resource" />
+                            <CategoryAxis fx:id="resourceAxis" label="Resource" tickLabelGap="8" />
                         </xAxis>
                         <yAxis>
                             <NumberAxis label="Quantity Available" />
