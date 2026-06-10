@@ -40,6 +40,36 @@ The code is organised into logical packages:
 
 This separation keeps the JavaFX UI layer separate from networking, transport, and backend logic.
 
+## Design Diagrams
+
+The project includes PNG diagram images that can be inserted directly into the group report.
+
+### System Architecture
+
+![System Architecture](docs/diagrams/system-architecture.png)
+
+### Use Case Diagram
+
+![Use Case Diagram](docs/diagrams/use-case-diagram.png)
+
+### Class Diagram
+
+![Class Diagram](docs/diagrams/class-diagram.png)
+
+### Sequence Diagrams
+
+![Login Sequence Diagram](docs/diagrams/sequence-login.png)
+
+![Submit Disaster Report Sequence Diagram](docs/diagrams/sequence-submit-report.png)
+
+![Assessment and Auto Task Sequence Diagram](docs/diagrams/sequence-assessment-auto-task.png)
+
+![Resource Allocation Sequence Diagram](docs/diagrams/sequence-resource-allocation.png)
+
+### ERD
+
+![Entity Relationship Diagram](docs/diagrams/erd.png)
+
 ## Secure Transport
 The client/server communication channel uses AES-based transport protection. Each `ServerRequest` and `ServerResponse` is encrypted as a `SealedObject` before being written to the socket, so disaster data is not sent as plaintext payload objects.
 
