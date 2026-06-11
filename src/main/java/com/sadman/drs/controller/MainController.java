@@ -68,16 +68,10 @@ public class MainController {
     @FXML private Label openTasksLabel;
     @FXML private Label availableResourcesLabel;
     @FXML private Label criticalResourceAlertsLabel;
-    @FXML private Label dashboardResourceAlertSummaryLabel;
     @FXML private PieChart reportStatusChart;
     @FXML private BarChart<String, Number> taskDepartmentChart;
     @FXML private BarChart<String, Number> resourceAvailabilityChart;
     @FXML private CategoryAxis resourceAxis;
-    @FXML private TableView<DepartmentResourceAlert> dashboardResourceAlertTable;
-    @FXML private TableColumn<DepartmentResourceAlert, String> dashboardAlertDepartmentColumn;
-    @FXML private TableColumn<DepartmentResourceAlert, String> dashboardAlertResourceColumn;
-    @FXML private TableColumn<DepartmentResourceAlert, Integer> dashboardAlertQuantityColumn;
-    @FXML private TableColumn<DepartmentResourceAlert, String> dashboardAlertMessageColumn;
 
     @FXML private TextField reportTitleField;
     @FXML private ComboBox<String> disasterTypeComboBox;
@@ -146,6 +140,7 @@ public class MainController {
     @FXML private ComboBox<Resource> resourceComboBox;
     @FXML private TextField quantityField;
     @FXML private TextArea resourceOutputArea;
+    @FXML private Label resourceCriticalAlertLabel;
     @FXML private TableView<Resource> resourceTable;
     @FXML private TableColumn<Resource, Integer> resourceIdColumn;
     @FXML private TableColumn<Resource, String> resourceNameColumn;
@@ -244,10 +239,6 @@ public class MainController {
                 allocationReportIdColumn,
                 allocationResourceColumn,
                 allocationQuantityColumn,
-                dashboardAlertDepartmentColumn,
-                dashboardAlertResourceColumn,
-                dashboardAlertQuantityColumn,
-                dashboardAlertMessageColumn,
                 resourceAlertDepartmentColumn,
                 resourceAlertServiceColumn,
                 resourceAlertResourceColumn,
@@ -327,6 +318,7 @@ public class MainController {
                 resourceComboBox,
                 quantityField,
                 resourceOutputArea,
+                resourceCriticalAlertLabel,
                 this::refreshAllData,
                 this::showResources);
 
@@ -365,11 +357,9 @@ public class MainController {
                 openTasksLabel,
                 availableResourcesLabel,
                 criticalResourceAlertsLabel,
-                dashboardResourceAlertSummaryLabel,
                 reportStatusChart,
                 taskDepartmentChart,
                 resourceAvailabilityChart,
-                dashboardResourceAlertTable,
                 databaseStatusLabel);
     }
 
@@ -572,11 +562,9 @@ public class MainController {
                 openTasksLabel,
                 availableResourcesLabel,
                 criticalResourceAlertsLabel,
-                dashboardResourceAlertSummaryLabel,
                 reportStatusChart,
                 taskDepartmentChart,
                 resourceAvailabilityChart,
-                dashboardResourceAlertTable,
                 databaseStatusLabel);
 
         UiDataRefresher.refreshReportData(clientService,

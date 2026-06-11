@@ -237,7 +237,7 @@ It includes:
 - Reports by status graph
 - In-progress tasks by department graph
 - Available resources graph
-- Department resource alert table
+- Department resource alert summary
 
 This improves usability by giving a quick overview of the current disaster response situation.
 

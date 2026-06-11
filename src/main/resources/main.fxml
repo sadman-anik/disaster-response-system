@@ -67,7 +67,7 @@
                         <Label fx:id="availableResourcesLabel" text="0" styleClass="stat-number" />
                     </VBox>
                     <VBox styleClass="stat-card alert-stat-card" HBox.hgrow="ALWAYS">
-                        <Label text="Critical Resource Alerts" styleClass="stat-label" />
+                        <Label text="Resource Alerts" styleClass="stat-label" />
                         <Label fx:id="criticalResourceAlertsLabel" text="0" styleClass="stat-number" />
                     </VBox>
                 </HBox>
@@ -98,18 +98,6 @@
                             <NumberAxis label="Quantity Available" />
                         </yAxis>
                     </BarChart>
-                </VBox>
-                <VBox styleClass="card alert-card" spacing="10">
-                    <Label text="Department Resource Alerts" styleClass="section-title alert-title" />
-                    <Label fx:id="dashboardResourceAlertSummaryLabel" text="All departments have sufficient matching resources." styleClass="info-label" />
-                    <TableView fx:id="dashboardResourceAlertTable" prefHeight="170">
-                        <columns>
-                            <TableColumn fx:id="dashboardAlertDepartmentColumn" text="Department" prefWidth="180" />
-                            <TableColumn fx:id="dashboardAlertResourceColumn" text="Critical Resource" prefWidth="180" />
-                            <TableColumn fx:id="dashboardAlertQuantityColumn" text="Qty" prefWidth="70" />
-                            <TableColumn fx:id="dashboardAlertMessageColumn" text="Alert" prefWidth="450" />
-                        </columns>
-                    </TableView>
                 </VBox>
             </VBox>
 
@@ -274,6 +262,7 @@
                         <TextField fx:id="quantityField" promptText="Quantity" />
                         <Button text="Allocate Selected Resource" onAction="#allocateSelectedResource" styleClass="primary-button" />
                         <TextArea fx:id="resourceOutputArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS" />
+                        <Label fx:id="resourceCriticalAlertLabel" visible="false" managed="false" wrapText="true" styleClass="critical-resource-alert-text" />
                     </VBox>
                     <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS">
                         <Label text="Available Resources" styleClass="section-title" />

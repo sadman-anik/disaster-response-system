@@ -31,11 +31,9 @@ public class UiDataRefresher {
             Label openTasksLabel,
             Label availableResourcesLabel,
             Label criticalResourceAlertsLabel,
-            Label dashboardResourceAlertSummaryLabel,
             PieChart reportStatusChart,
             BarChart<String, Number> taskDepartmentChart,
             BarChart<String, Number> resourceAvailabilityChart,
-            TableView<DepartmentResourceAlert> dashboardResourceAlertTable,
             Label databaseStatusLabel) {
         try {
             List<DisasterReport> reports = clientService.findAllReports();
@@ -61,8 +59,6 @@ public class UiDataRefresher {
             openTasksLabel.setText(String.valueOf(openTasks));
             availableResourcesLabel.setText(String.valueOf(totalResources));
             criticalResourceAlertsLabel.setText(String.valueOf(resourceAlerts.size()));
-            dashboardResourceAlertSummaryLabel.setText(buildResourceAlertSummary(resourceAlerts));
-            dashboardResourceAlertTable.setItems(FXCollections.observableArrayList(resourceAlerts));
 
             reportStatusChart.setData(ViewFormatter.createReportStatusChartData(reports));
             taskDepartmentChart.getData().setAll(ViewFormatter.createTaskDepartmentSeries(tasks));

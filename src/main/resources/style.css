@@ -217,6 +217,17 @@
     -fx-font-weight: bold;
 }
 
+.critical-resource-alert-text {
+    -fx-text-fill: #b91c1c;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-background-color: #fff1f2;
+    -fx-border-color: #ef4444;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 10 12;
+}
+
 .requirement-label {
     -fx-font-size: 12px;
     -fx-font-weight: bold;

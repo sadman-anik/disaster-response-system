@@ -10,6 +10,7 @@ import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class ViewFormatter {
@@ -120,6 +121,26 @@ public class ViewFormatter {
         String resourceName = resource.getResourceName();
         if (resourceName == null || resourceName.isBlank()) {
             return "Unnamed resource #" + resource.getResourceId();
+        }
+
+        String normalizedName = resourceName.toLowerCase(Locale.ROOT);
+        if (normalizedName.contains("police patrol")) {
+            return "Police Unit";
+        }
+        if (normalizedName.contains("temporary shelter")) {
+            return "Shelter Kit";
+        }
+        if (normalizedName.contains("electricity repair")) {
+            return "Power Team";
+        }
+        if (normalizedName.contains("debris removal")) {
+            return "Debris Truck";
+        }
+        if (normalizedName.contains("water supply")) {
+            return "Water Tanker";
+        }
+        if (normalizedName.contains("search and rescue")) {
+            return "SAR Team";
         }
         return resourceName;
     }
