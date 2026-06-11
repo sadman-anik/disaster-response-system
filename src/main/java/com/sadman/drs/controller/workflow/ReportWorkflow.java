@@ -19,9 +19,11 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * Handles report submission, duplicate checking, searching, and report status workflow.
+ * Handles report submission, duplicate checking, searching, and report status
+ * workflow.
  */
 public class ReportWorkflow {
+
     private final Supplier<DRSClientService> clientServiceSupplier;
     private final ReportValidationService reportValidationService;
     private final DuplicateCheckWorkflow duplicateCheckWorkflow;
@@ -34,6 +36,7 @@ public class ReportWorkflow {
     private final TextArea descriptionArea;
     private final TextArea reportResultArea;
     private final TextField searchField;
+    private final ComboBox<String> severityFilterComboBox;
     private final TableView<DisasterReport> reportTable;
     private final ComboBox<String> reportStatusComboBox;
     private final TextArea reportDetailsArea;
@@ -41,22 +44,23 @@ public class ReportWorkflow {
     private final Runnable refreshAllData;
 
     public ReportWorkflow(Supplier<DRSClientService> clientServiceSupplier,
-                          ReportValidationService reportValidationService,
-                          DuplicateCheckWorkflow duplicateCheckWorkflow,
-                          TextField reportTitleField,
-                          ComboBox<String> disasterTypeComboBox,
-                          ComboBox<String> severityComboBox,
-                          TextField locationField,
-                          TextField reportedByField,
-                          TextField contactNumberField,
-                          TextArea descriptionArea,
-                          TextArea reportResultArea,
-                          TextField searchField,
-                          TableView<DisasterReport> reportTable,
-                          ComboBox<String> reportStatusComboBox,
-                          TextArea reportDetailsArea,
-                          ComboBox<ResponseTask> reportTaskComboBox,
-                          Runnable refreshAllData) {
+            ReportValidationService reportValidationService,
+            DuplicateCheckWorkflow duplicateCheckWorkflow,
+            TextField reportTitleField,
+            ComboBox<String> disasterTypeComboBox,
+            ComboBox<String> severityComboBox,
+            TextField locationField,
+            TextField reportedByField,
+            TextField contactNumberField,
+            TextArea descriptionArea,
+            TextArea reportResultArea,
+            TextField searchField,
+            ComboBox<String> severityFilterComboBox,
+            TableView<DisasterReport> reportTable,
+            ComboBox<String> reportStatusComboBox,
+            TextArea reportDetailsArea,
+            ComboBox<ResponseTask> reportTaskComboBox,
+            Runnable refreshAllData) {
         this.clientServiceSupplier = clientServiceSupplier;
         this.reportValidationService = reportValidationService;
         this.duplicateCheckWorkflow = duplicateCheckWorkflow;
@@ -69,6 +73,7 @@ public class ReportWorkflow {
         this.descriptionArea = descriptionArea;
         this.reportResultArea = reportResultArea;
         this.searchField = searchField;
+        this.severityFilterComboBox = severityFilterComboBox;
         this.reportTable = reportTable;
         this.reportStatusComboBox = reportStatusComboBox;
         this.reportDetailsArea = reportDetailsArea;
@@ -151,11 +156,20 @@ public class ReportWorkflow {
 
     public void searchReports() {
         String keyword = searchField.getText();
+        String selectedSeverity = FormValueHelper.getValue(severityFilterComboBox);
 
         try {
             List<DisasterReport> reports = FormValueHelper.isBlank(keyword)
                     ? clientServiceSupplier.get().findAllReports()
                     : clientServiceSupplier.get().searchReports(keyword.trim());
+
+            if (!FormValueHelper.isBlank(selectedSeverity)
+                    && !"All Severities".equalsIgnoreCase(selectedSeverity)) {
+                reports = reports.stream()
+                        .filter(report -> selectedSeverity.equalsIgnoreCase(report.getSeverity()))
+                        .toList();
+            }
+
             reportTable.setItems(FXCollections.observableArrayList(reports));
         } catch (IOException | ClassNotFoundException exception) {
             AlertHelper.showError("Search Error", exception.getMessage());
