@@ -364,9 +364,12 @@ public class MainController {
                 criticalReportsLabel,
                 openTasksLabel,
                 availableResourcesLabel,
+                criticalResourceAlertsLabel,
+                dashboardResourceAlertSummaryLabel,
                 reportStatusChart,
                 taskDepartmentChart,
                 resourceAvailabilityChart,
+                dashboardResourceAlertTable,
                 databaseStatusLabel);
     }
 
@@ -407,7 +410,9 @@ public class MainController {
                 resourceReportComboBox,
                 resourceComboBox,
                 resourceTable,
-                allocationTable);
+                allocationTable,
+                resourceAlertSummaryLabel,
+                resourceAlertTable);
     }
 
     @FXML
@@ -566,9 +571,12 @@ public class MainController {
                 criticalReportsLabel,
                 openTasksLabel,
                 availableResourcesLabel,
+                criticalResourceAlertsLabel,
+                dashboardResourceAlertSummaryLabel,
                 reportStatusChart,
                 taskDepartmentChart,
                 resourceAvailabilityChart,
+                dashboardResourceAlertTable,
                 databaseStatusLabel);
 
         UiDataRefresher.refreshReportData(clientService,
@@ -600,7 +608,9 @@ public class MainController {
                     resourceReportComboBox,
                     resourceComboBox,
                     resourceTable,
-                    allocationTable);
+                    allocationTable,
+                    resourceAlertSummaryLabel,
+                    resourceAlertTable);
         }
 
         if (rolePermissionService.canViewAudit(role)) {

@@ -3,11 +3,13 @@ package com.sadman.drs.controller.ui;
 import com.sadman.drs.client.bridge.DRSClientService;
 import com.sadman.drs.model.AssessmentResult;
 import com.sadman.drs.model.Department;
+import com.sadman.drs.model.DepartmentResourceAlert;
 import com.sadman.drs.model.DisasterReport;
 import com.sadman.drs.model.Resource;
 import com.sadman.drs.model.ResourceAllocation;
 import com.sadman.drs.model.ResponseTask;
 import com.sadman.drs.model.StatusValues;
+import com.sadman.drs.server.service.DepartmentResourceAlertService;
 import javafx.collections.FXCollections;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.PieChart;
@@ -20,6 +22,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class UiDataRefresher {
+    private static final DepartmentResourceAlertService RESOURCE_ALERT_SERVICE = new DepartmentResourceAlertService();
 
     public static void refreshDashboard(
             DRSClientService clientService,
@@ -27,14 +30,20 @@ public class UiDataRefresher {
             Label criticalReportsLabel,
             Label openTasksLabel,
             Label availableResourcesLabel,
+            Label criticalResourceAlertsLabel,
+            Label dashboardResourceAlertSummaryLabel,
             PieChart reportStatusChart,
             BarChart<String, Number> taskDepartmentChart,
             BarChart<String, Number> resourceAvailabilityChart,
+            TableView<DepartmentResourceAlert> dashboardResourceAlertTable,
             Label databaseStatusLabel) {
         try {
             List<DisasterReport> reports = clientService.findAllReports();
             List<ResponseTask> tasks = clientService.findAllTasks();
             List<Resource> resources = clientService.findAllResources();
+            List<Department> departments = clientService.findAllDepartments();
+            List<DepartmentResourceAlert> resourceAlerts =
+                    RESOURCE_ALERT_SERVICE.findCriticalAlerts(departments, resources);
 
             long totalReports = reports.size();
             long criticalReports = reports.stream()
@@ -51,6 +60,9 @@ public class UiDataRefresher {
             criticalReportsLabel.setText(String.valueOf(criticalReports));
             openTasksLabel.setText(String.valueOf(openTasks));
             availableResourcesLabel.setText(String.valueOf(totalResources));
+            criticalResourceAlertsLabel.setText(String.valueOf(resourceAlerts.size()));
+            dashboardResourceAlertSummaryLabel.setText(buildResourceAlertSummary(resourceAlerts));
+            dashboardResourceAlertTable.setItems(FXCollections.observableArrayList(resourceAlerts));
 
             reportStatusChart.setData(ViewFormatter.createReportStatusChartData(reports));
             taskDepartmentChart.getData().setAll(ViewFormatter.createTaskDepartmentSeries(tasks));
@@ -120,15 +132,33 @@ public class UiDataRefresher {
             ComboBox<DisasterReport> resourceReportComboBox,
             ComboBox<Resource> resourceComboBox,
             TableView<Resource> resourceTable,
-            TableView<ResourceAllocation> allocationTable) {
+            TableView<ResourceAllocation> allocationTable,
+            Label resourceAlertSummaryLabel,
+            TableView<DepartmentResourceAlert> resourceAlertTable) {
         try {
+            List<Resource> resources = clientService.findAllResources();
+            List<DepartmentResourceAlert> resourceAlerts =
+                    RESOURCE_ALERT_SERVICE.findCriticalAlerts(clientService.findAllDepartments(), resources);
+
             resourceReportComboBox.setItems(FXCollections.observableArrayList(clientService.findAllReports()));
-            resourceComboBox.setItems(FXCollections.observableArrayList(clientService.findAllResources()));
-            resourceTable.setItems(FXCollections.observableArrayList(clientService.findAllResources()));
+            resourceComboBox.setItems(FXCollections.observableArrayList(resources));
+            resourceTable.setItems(FXCollections.observableArrayList(resources));
             allocationTable.setItems(FXCollections.observableArrayList(clientService.findAllAllocations()));
+            resourceAlertSummaryLabel.setText(buildResourceAlertSummary(resourceAlerts));
+            resourceAlertTable.setItems(FXCollections.observableArrayList(resourceAlerts));
         } catch (IOException | ClassNotFoundException exception) {
             showRefreshError("Resource Refresh Error", exception.getMessage());
         }
+    }
+
+    private static String buildResourceAlertSummary(List<DepartmentResourceAlert> alerts) {
+        if (alerts.isEmpty()) {
+            return "All departments have sufficient matching resources.";
+        }
+        if (alerts.size() == 1) {
+            return "1 department resource is critically low. Review responsiveness before assigning new tasks.";
+        }
+        return alerts.size() + " department resources are critically low. Review responsiveness before assigning new tasks.";
     }
 
     private static void showRefreshError(String title, String message) {
