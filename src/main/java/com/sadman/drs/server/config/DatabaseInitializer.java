@@ -1,7 +1,9 @@
 package com.sadman.drs.server.config;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -28,6 +30,8 @@ public class DatabaseInitializer {
 
     private void createTablesIfMissing() throws SQLException {
         try (Connection connection = DatabaseConnection.getConnection(); Statement statement = connection.createStatement()) {
+            resetIncompatibleSchemaIfNeeded(connection, statement);
+
             statement.executeUpdate("""
                     CREATE TABLE IF NOT EXISTS disaster_reports (
                         report_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -144,6 +148,48 @@ public class DatabaseInitializer {
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
                     """);
+        }
+    }
+
+    private void resetIncompatibleSchemaIfNeeded(Connection connection, Statement statement) throws SQLException {
+        if (!hasIncompatibleSchema(connection)) {
+            return;
+        }
+
+        statement.executeUpdate("SET FOREIGN_KEY_CHECKS = 0");
+        try {
+            statement.executeUpdate("DROP TABLE IF EXISTS audit_events");
+            statement.executeUpdate("DROP TABLE IF EXISTS resource_allocations");
+            statement.executeUpdate("DROP TABLE IF EXISTS response_tasks");
+            statement.executeUpdate("DROP TABLE IF EXISTS disaster_assessments");
+            statement.executeUpdate("DROP TABLE IF EXISTS resources");
+            statement.executeUpdate("DROP TABLE IF EXISTS departments");
+            statement.executeUpdate("DROP TABLE IF EXISTS users");
+            statement.executeUpdate("DROP TABLE IF EXISTS disaster_reports");
+        } finally {
+            statement.executeUpdate("SET FOREIGN_KEY_CHECKS = 1");
+        }
+    }
+
+    private boolean hasIncompatibleSchema(Connection connection) throws SQLException {
+        return isMissingColumn(connection, "disaster_reports", "report_title")
+                || isMissingColumn(connection, "disaster_assessments", "assessment_id")
+                || isMissingColumn(connection, "response_tasks", "task_id")
+                || isMissingColumn(connection, "resource_allocations", "task_id")
+                || isMissingColumn(connection, "audit_events", "audit_id")
+                || isMissingColumn(connection, "users", "password_hash");
+    }
+
+    private boolean isMissingColumn(Connection connection, String tableName, String columnName) throws SQLException {
+        DatabaseMetaData metadata = connection.getMetaData();
+        try (ResultSet tables = metadata.getTables(connection.getCatalog(), null, tableName, new String[]{"TABLE"})) {
+            if (!tables.next()) {
+                return false;
+            }
+        }
+
+        try (ResultSet columns = metadata.getColumns(connection.getCatalog(), null, tableName, columnName)) {
+            return !columns.next();
         }
     }
 }
