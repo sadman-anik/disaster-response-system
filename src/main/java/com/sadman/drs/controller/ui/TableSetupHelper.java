@@ -2,6 +2,7 @@ package com.sadman.drs.controller.ui;
 
 import com.sadman.drs.model.AssessmentResult;
 import com.sadman.drs.model.Department;
+import com.sadman.drs.model.DepartmentResourceAlert;
 import com.sadman.drs.model.DisasterReport;
 import com.sadman.drs.model.Resource;
 import com.sadman.drs.model.ResourceAllocation;
@@ -49,6 +50,10 @@ public class TableSetupHelper {
             TableColumn<ResourceAllocation, Integer> allocationReportIdColumn,
             TableColumn<ResourceAllocation, String> allocationResourceColumn,
             TableColumn<ResourceAllocation, Integer> allocationQuantityColumn,
+            TableColumn<DepartmentResourceAlert, String> resourceAlertDepartmentColumn,
+            TableColumn<DepartmentResourceAlert, String> resourceAlertServiceColumn,
+            TableColumn<DepartmentResourceAlert, String> resourceAlertResourceColumn,
+            TableColumn<DepartmentResourceAlert, Integer> resourceAlertQuantityColumn,
             TableColumn<DisasterReport, String> reportDisplayColumn,
             TableColumn<DisasterReport, String> reportTypeColumn,
             TableColumn<DisasterReport, String> reportSeverityColumn,
@@ -101,6 +106,11 @@ public class TableSetupHelper {
         allocationReportIdColumn.setCellValueFactory(new PropertyValueFactory<>("reportId"));
         allocationResourceColumn.setCellValueFactory(new PropertyValueFactory<>("resourceName"));
         allocationQuantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantityAllocated"));
+
+        resourceAlertDepartmentColumn.setCellValueFactory(new PropertyValueFactory<>("departmentName"));
+        resourceAlertServiceColumn.setCellValueFactory(new PropertyValueFactory<>("serviceType"));
+        resourceAlertResourceColumn.setCellValueFactory(new PropertyValueFactory<>("resourceName"));
+        resourceAlertQuantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantityAvailable"));
 
         reportDisplayColumn.setCellValueFactory(new PropertyValueFactory<>("reportDisplayName"));
         reportTypeColumn.setCellValueFactory(new PropertyValueFactory<>("disasterType"));

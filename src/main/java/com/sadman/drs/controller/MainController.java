@@ -16,6 +16,7 @@ import com.sadman.drs.controller.workflow.TaskWorkflow;
 import com.sadman.drs.model.AssessmentResult;
 import com.sadman.drs.model.AuditRecord;
 import com.sadman.drs.model.Department;
+import com.sadman.drs.model.DepartmentResourceAlert;
 import com.sadman.drs.model.DisasterReport;
 import com.sadman.drs.model.Resource;
 import com.sadman.drs.model.ResourceAllocation;
@@ -66,6 +67,7 @@ public class MainController {
     @FXML private Label criticalReportsLabel;
     @FXML private Label openTasksLabel;
     @FXML private Label availableResourcesLabel;
+    @FXML private Label criticalResourceAlertsLabel;
     @FXML private PieChart reportStatusChart;
     @FXML private BarChart<String, Number> taskDepartmentChart;
     @FXML private BarChart<String, Number> resourceAvailabilityChart;
@@ -138,6 +140,7 @@ public class MainController {
     @FXML private ComboBox<Resource> resourceComboBox;
     @FXML private TextField quantityField;
     @FXML private TextArea resourceOutputArea;
+    @FXML private Label resourceCriticalAlertLabel;
     @FXML private TableView<Resource> resourceTable;
     @FXML private TableColumn<Resource, Integer> resourceIdColumn;
     @FXML private TableColumn<Resource, String> resourceNameColumn;
@@ -148,6 +151,12 @@ public class MainController {
     @FXML private TableColumn<ResourceAllocation, Integer> allocationReportIdColumn;
     @FXML private TableColumn<ResourceAllocation, String> allocationResourceColumn;
     @FXML private TableColumn<ResourceAllocation, Integer> allocationQuantityColumn;
+    @FXML private Label resourceAlertSummaryLabel;
+    @FXML private TableView<DepartmentResourceAlert> resourceAlertTable;
+    @FXML private TableColumn<DepartmentResourceAlert, String> resourceAlertDepartmentColumn;
+    @FXML private TableColumn<DepartmentResourceAlert, String> resourceAlertServiceColumn;
+    @FXML private TableColumn<DepartmentResourceAlert, String> resourceAlertResourceColumn;
+    @FXML private TableColumn<DepartmentResourceAlert, Integer> resourceAlertQuantityColumn;
 
     @FXML private TextField searchField;
     @FXML private TableView<DisasterReport> reportTable;
@@ -230,6 +239,10 @@ public class MainController {
                 allocationReportIdColumn,
                 allocationResourceColumn,
                 allocationQuantityColumn,
+                resourceAlertDepartmentColumn,
+                resourceAlertServiceColumn,
+                resourceAlertResourceColumn,
+                resourceAlertQuantityColumn,
                 reportDisplayColumn,
                 reportTypeColumn,
                 reportSeverityColumn,
@@ -305,6 +318,7 @@ public class MainController {
                 resourceComboBox,
                 quantityField,
                 resourceOutputArea,
+                resourceCriticalAlertLabel,
                 this::refreshAllData,
                 this::showResources);
 
@@ -342,6 +356,7 @@ public class MainController {
                 criticalReportsLabel,
                 openTasksLabel,
                 availableResourcesLabel,
+                criticalResourceAlertsLabel,
                 reportStatusChart,
                 taskDepartmentChart,
                 resourceAvailabilityChart,
@@ -385,7 +400,9 @@ public class MainController {
                 resourceReportComboBox,
                 resourceComboBox,
                 resourceTable,
-                allocationTable);
+                allocationTable,
+                resourceAlertSummaryLabel,
+                resourceAlertTable);
     }
 
     @FXML
@@ -544,6 +561,7 @@ public class MainController {
                 criticalReportsLabel,
                 openTasksLabel,
                 availableResourcesLabel,
+                criticalResourceAlertsLabel,
                 reportStatusChart,
                 taskDepartmentChart,
                 resourceAvailabilityChart,
@@ -578,7 +596,9 @@ public class MainController {
                     resourceReportComboBox,
                     resourceComboBox,
                     resourceTable,
-                    allocationTable);
+                    allocationTable,
+                    resourceAlertSummaryLabel,
+                    resourceAlertTable);
         }
 
         if (rolePermissionService.canViewAudit(role)) {

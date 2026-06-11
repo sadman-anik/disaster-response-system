@@ -108,6 +108,20 @@
     -fx-border-radius: 20;
 }
 
+.alert-stat-card {
+    -fx-border-color: #f3b2a7;
+}
+
+.alert-card {
+    -fx-border-color: #f3b2a7;
+    -fx-border-width: 1;
+    -fx-border-radius: 20;
+}
+
+.alert-title {
+    -fx-text-fill: #9f1239;
+}
+
 .stat-label {
     -fx-text-fill: #66752e;
     -fx-font-size: 13px;
@@ -201,6 +215,17 @@
     -fx-text-fill: #b91c1c;
     -fx-font-size: 13px;
     -fx-font-weight: bold;
+}
+
+.critical-resource-alert-text {
+    -fx-text-fill: #b91c1c;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-background-color: #fff1f2;
+    -fx-border-color: #ef4444;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 10 12;
 }
 
 .requirement-label {
