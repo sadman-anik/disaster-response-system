@@ -48,147 +48,275 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Controller class that handles all JavaFX UI events.
- * The business logic is delegated to service classes and data persistence is delegated to repositories.
+ * Controller class that handles all JavaFX UI events. The business logic is
+ * delegated to service classes and data persistence is delegated to
+ * repositories.
  */
 public class MainController {
 
-    @FXML private Label pageTitleLabel;
-    @FXML private Label databaseStatusLabel;
-    @FXML private Label userStatusLabel;
+    @FXML
+    private Label pageTitleLabel;
+    @FXML
+    private Label databaseStatusLabel;
+    @FXML
+    private Label userStatusLabel;
 
-    @FXML private VBox dashboardPane;
-    @FXML private VBox reportPane;
-    @FXML private VBox assessmentPane;
-    @FXML private VBox coordinationPane;
-    @FXML private VBox departmentsPane;
-    @FXML private VBox resourcesPane;
-    @FXML private VBox reportsPane;
-    @FXML private VBox auditPane;
+    @FXML
+    private VBox dashboardPane;
+    @FXML
+    private VBox reportPane;
+    @FXML
+    private VBox assessmentPane;
+    @FXML
+    private VBox coordinationPane;
+    @FXML
+    private VBox departmentsPane;
+    @FXML
+    private VBox resourcesPane;
+    @FXML
+    private VBox reportsPane;
+    @FXML
+    private VBox auditPane;
 
-    @FXML private Label totalReportsLabel;
-    @FXML private Label criticalReportsLabel;
-    @FXML private Label openTasksLabel;
-    @FXML private Label availableResourcesLabel;
-    @FXML private Label criticalResourceAlertsLabel;
-    @FXML private PieChart reportStatusChart;
-    @FXML private BarChart<String, Number> taskDepartmentChart;
-    @FXML private BarChart<String, Number> resourceAvailabilityChart;
-    @FXML private CategoryAxis resourceAxis;
+    @FXML
+    private Label totalReportsLabel;
+    @FXML
+    private Label criticalReportsLabel;
+    @FXML
+    private Label openTasksLabel;
+    @FXML
+    private Label availableResourcesLabel;
+    @FXML
+    private Label criticalResourceAlertsLabel;
+    @FXML
+    private PieChart reportStatusChart;
+    @FXML
+    private BarChart<String, Number> taskDepartmentChart;
+    @FXML
+    private BarChart<String, Number> resourceAvailabilityChart;
+    @FXML
+    private CategoryAxis resourceAxis;
 
-    @FXML private TextField reportTitleField;
-    @FXML private ComboBox<String> disasterTypeComboBox;
-    @FXML private ComboBox<String> severityComboBox;
-    @FXML private Button dashboardButton;
-    @FXML private Button reportButton;
-    @FXML private Button assessmentButton;
-    @FXML private Button coordinationButton;
-    @FXML private Button departmentsButton;
-    @FXML private Button resourcesButton;
-    @FXML private Button reportsButton;
-    @FXML private Button auditButton;
-    @FXML private TextField locationField;
-    @FXML private TextField reportedByField;
-    @FXML private TextField contactNumberField;
-    @FXML private TextArea descriptionArea;
-    @FXML private Label duplicateWarningLabel;
-    @FXML private Button submitReportButton;
-    @FXML private TextArea reportResultArea;
+    @FXML
+    private TextField reportTitleField;
+    @FXML
+    private ComboBox<String> disasterTypeComboBox;
+    @FXML
+    private ComboBox<String> severityComboBox;
+    @FXML
+    private Button dashboardButton;
+    @FXML
+    private Button reportButton;
+    @FXML
+    private Button assessmentButton;
+    @FXML
+    private Button coordinationButton;
+    @FXML
+    private Button departmentsButton;
+    @FXML
+    private Button resourcesButton;
+    @FXML
+    private Button reportsButton;
+    @FXML
+    private Button auditButton;
+    @FXML
+    private TextField locationField;
+    @FXML
+    private TextField reportedByField;
+    @FXML
+    private TextField contactNumberField;
+    @FXML
+    private TextArea descriptionArea;
+    @FXML
+    private Label duplicateWarningLabel;
+    @FXML
+    private Button submitReportButton;
+    @FXML
+    private TextArea reportResultArea;
 
     private User currentUser;
 
-    @FXML private ComboBox<DisasterReport> assessmentReportComboBox;
-    @FXML private ComboBox<String> damageLevelComboBox;
-    @FXML private TextField peopleAffectedField;
-    @FXML private CheckBox infrastructureDamageCheckBox;
-    @FXML private TextArea assessmentOutputArea;
-    @FXML private TableView<AssessmentResult> assessmentTable;
-    @FXML private TableColumn<AssessmentResult, Integer> assessmentIdColumn;
-    @FXML private TableColumn<AssessmentResult, String> assessmentReportIdColumn;
-    @FXML private TableColumn<AssessmentResult, String> assessmentDamageColumn;
-    @FXML private TableColumn<AssessmentResult, Integer> assessmentPeopleColumn;
-    @FXML private TableColumn<AssessmentResult, Integer> assessmentScoreColumn;
-    @FXML private TableColumn<AssessmentResult, String> assessmentPriorityColumn;
+    @FXML
+    private ComboBox<DisasterReport> assessmentReportComboBox;
+    @FXML
+    private ComboBox<String> damageLevelComboBox;
+    @FXML
+    private TextField peopleAffectedField;
+    @FXML
+    private CheckBox infrastructureDamageCheckBox;
+    @FXML
+    private TextArea assessmentOutputArea;
+    @FXML
+    private TableView<AssessmentResult> assessmentTable;
+    @FXML
+    private TableColumn<AssessmentResult, Integer> assessmentIdColumn;
+    @FXML
+    private TableColumn<AssessmentResult, String> assessmentReportIdColumn;
+    @FXML
+    private TableColumn<AssessmentResult, String> assessmentDamageColumn;
+    @FXML
+    private TableColumn<AssessmentResult, Integer> assessmentPeopleColumn;
+    @FXML
+    private TableColumn<AssessmentResult, Integer> assessmentScoreColumn;
+    @FXML
+    private TableColumn<AssessmentResult, String> assessmentPriorityColumn;
 
-    @FXML private ComboBox<DisasterReport> taskReportComboBox;
-    @FXML private ComboBox<Department> taskDepartmentComboBox;
-    @FXML private ComboBox<String> activityTypeComboBox;
-    @FXML private ComboBox<String> taskPriorityComboBox;
-    @FXML private TextArea taskDescriptionArea;
-    @FXML private TextArea coordinationOutputArea;
-    @FXML private TableView<ResponseTask> taskTable;
-    @FXML private TableColumn<ResponseTask, Integer> taskIdColumn;
-    @FXML private TableColumn<ResponseTask, String> taskReportIdColumn;
-    @FXML private TableColumn<ResponseTask, String> taskDepartmentColumn;
-    @FXML private TableColumn<ResponseTask, String> taskActivityColumn;
-    @FXML private TableColumn<ResponseTask, String> taskPriorityColumn;
-    @FXML private TableColumn<ResponseTask, String> taskStatusColumn;
-    @FXML private Button deleteResponseTaskButton;
+    @FXML
+    private ComboBox<DisasterReport> taskReportComboBox;
+    @FXML
+    private ComboBox<Department> taskDepartmentComboBox;
+    @FXML
+    private ComboBox<String> activityTypeComboBox;
+    @FXML
+    private ComboBox<String> taskPriorityComboBox;
+    @FXML
+    private TextArea taskDescriptionArea;
+    @FXML
+    private TextArea coordinationOutputArea;
+    @FXML
+    private TableView<ResponseTask> taskTable;
+    @FXML
+    private TableColumn<ResponseTask, Integer> taskIdColumn;
+    @FXML
+    private TableColumn<ResponseTask, String> taskReportIdColumn;
+    @FXML
+    private TableColumn<ResponseTask, String> taskDepartmentColumn;
+    @FXML
+    private TableColumn<ResponseTask, String> taskActivityColumn;
+    @FXML
+    private TableColumn<ResponseTask, String> taskPriorityColumn;
+    @FXML
+    private TableColumn<ResponseTask, String> taskStatusColumn;
+    @FXML
+    private Button deleteResponseTaskButton;
 
-    @FXML private TableView<Department> departmentTable;
-    @FXML private TableColumn<Department, Integer> departmentIdColumn;
-    @FXML private TableColumn<Department, String> departmentNameColumn;
-    @FXML private TableColumn<Department, String> departmentServiceColumn;
-    @FXML private TableColumn<Department, String> departmentContactColumn;
-    @FXML private TableColumn<Department, String> departmentStatusColumn;
-    @FXML private TableView<ResponseTask> departmentTaskTable;
-    @FXML private TableColumn<ResponseTask, Integer> departmentTaskIdColumn;
-    @FXML private TableColumn<ResponseTask, String> departmentTaskReportColumn;
-    @FXML private TableColumn<ResponseTask, String> departmentTaskDepartmentColumn;
-    @FXML private TableColumn<ResponseTask, String> departmentTaskActivityColumn;
-    @FXML private TableColumn<ResponseTask, String> departmentTaskPriorityColumn;
-    @FXML private TableColumn<ResponseTask, String> departmentTaskStatusColumn;
-    @FXML private ComboBox<String> departmentTaskStatusComboBox;
+    @FXML
+    private TableView<Department> departmentTable;
+    @FXML
+    private TableColumn<Department, Integer> departmentIdColumn;
+    @FXML
+    private TableColumn<Department, String> departmentNameColumn;
+    @FXML
+    private TableColumn<Department, String> departmentServiceColumn;
+    @FXML
+    private TableColumn<Department, String> departmentContactColumn;
+    @FXML
+    private TableColumn<Department, String> departmentStatusColumn;
+    @FXML
+    private TableView<ResponseTask> departmentTaskTable;
+    @FXML
+    private TableColumn<ResponseTask, Integer> departmentTaskIdColumn;
+    @FXML
+    private TableColumn<ResponseTask, String> departmentTaskReportColumn;
+    @FXML
+    private TableColumn<ResponseTask, String> departmentTaskDepartmentColumn;
+    @FXML
+    private TableColumn<ResponseTask, String> departmentTaskActivityColumn;
+    @FXML
+    private TableColumn<ResponseTask, String> departmentTaskPriorityColumn;
+    @FXML
+    private TableColumn<ResponseTask, String> departmentTaskStatusColumn;
+    @FXML
+    private ComboBox<String> departmentTaskStatusComboBox;
 
-    @FXML private ComboBox<DisasterReport> resourceReportComboBox;
-    @FXML private ComboBox<ResponseTask> resourceTaskComboBox;
-    @FXML private ComboBox<Resource> resourceComboBox;
-    @FXML private TextField quantityField;
-    @FXML private TextArea resourceOutputArea;
-    @FXML private Label resourceCriticalAlertLabel;
-    @FXML private TableView<Resource> resourceTable;
-    @FXML private TableColumn<Resource, Integer> resourceIdColumn;
-    @FXML private TableColumn<Resource, String> resourceNameColumn;
-    @FXML private TableColumn<Resource, String> resourceCategoryColumn;
-    @FXML private TableColumn<Resource, Integer> resourceQuantityColumn;
-    @FXML private TableView<ResourceAllocation> allocationTable;
-    @FXML private TableColumn<ResourceAllocation, Integer> allocationIdColumn;
-    @FXML private TableColumn<ResourceAllocation, Integer> allocationReportIdColumn;
-    @FXML private TableColumn<ResourceAllocation, String> allocationTaskColumn;
-    @FXML private TableColumn<ResourceAllocation, String> allocationResourceColumn;
-    @FXML private TableColumn<ResourceAllocation, Integer> allocationQuantityColumn;
-    @FXML private Label resourceAlertSummaryLabel;
-    @FXML private TableView<DepartmentResourceAlert> resourceAlertTable;
-    @FXML private TableColumn<DepartmentResourceAlert, String> resourceAlertDepartmentColumn;
-    @FXML private TableColumn<DepartmentResourceAlert, String> resourceAlertServiceColumn;
-    @FXML private TableColumn<DepartmentResourceAlert, String> resourceAlertResourceColumn;
-    @FXML private TableColumn<DepartmentResourceAlert, Integer> resourceAlertQuantityColumn;
+    @FXML
+    private ComboBox<DisasterReport> resourceReportComboBox;
+    @FXML
+    private ComboBox<ResponseTask> resourceTaskComboBox;
+    @FXML
+    private ComboBox<Resource> resourceComboBox;
+    @FXML
+    private TextField quantityField;
+    @FXML
+    private TextArea resourceOutputArea;
+    @FXML
+    private Label resourceCriticalAlertLabel;
+    @FXML
+    private TableView<Resource> resourceTable;
+    @FXML
+    private TableColumn<Resource, Integer> resourceIdColumn;
+    @FXML
+    private TableColumn<Resource, String> resourceNameColumn;
+    @FXML
+    private TableColumn<Resource, String> resourceCategoryColumn;
+    @FXML
+    private TableColumn<Resource, Integer> resourceQuantityColumn;
+    @FXML
+    private TableView<ResourceAllocation> allocationTable;
+    @FXML
+    private TableColumn<ResourceAllocation, Integer> allocationIdColumn;
+    @FXML
+    private TableColumn<ResourceAllocation, Integer> allocationReportIdColumn;
+    @FXML
+    private TableColumn<ResourceAllocation, String> allocationTaskColumn;
+    @FXML
+    private TableColumn<ResourceAllocation, String> allocationResourceColumn;
+    @FXML
+    private TableColumn<ResourceAllocation, Integer> allocationQuantityColumn;
+    @FXML
+    private Label resourceAlertSummaryLabel;
+    @FXML
+    private TableView<DepartmentResourceAlert> resourceAlertTable;
+    @FXML
+    private TableColumn<DepartmentResourceAlert, String> resourceAlertDepartmentColumn;
+    @FXML
+    private TableColumn<DepartmentResourceAlert, String> resourceAlertServiceColumn;
+    @FXML
+    private TableColumn<DepartmentResourceAlert, String> resourceAlertResourceColumn;
+    @FXML
+    private TableColumn<DepartmentResourceAlert, Integer> resourceAlertQuantityColumn;
 
-    @FXML private TextField searchField;
-    @FXML private TableView<DisasterReport> reportTable;
-    @FXML private TableColumn<DisasterReport, String> reportDisplayColumn;
-    @FXML private TableColumn<DisasterReport, String> reportTypeColumn;
-    @FXML private TableColumn<DisasterReport, String> reportSeverityColumn;
-    @FXML private TableColumn<DisasterReport, String> reportLocationColumn;
-    @FXML private TableColumn<DisasterReport, String> reportPriorityColumn;
-    @FXML private TableColumn<DisasterReport, String> reportStatusColumn;
-    @FXML private TextArea reportDetailsArea;
-    @FXML private VBox reportStatusUpdatePane;
-    @FXML private ComboBox<String> reportStatusComboBox;
-    @FXML private Button updateReportStatusButton;
-    @FXML private ComboBox<ResponseTask> reportTaskComboBox;
-    @FXML private ComboBox<String> reportTaskStatusComboBox;
+    @FXML
+    private TextField searchField;
+    @FXML
+    private ComboBox<String> severityFilterComboBox;
+    @FXML
+    private TableView<DisasterReport> reportTable;
+    @FXML
+    private TableColumn<DisasterReport, String> reportDisplayColumn;
+    @FXML
+    private TableColumn<DisasterReport, String> reportTypeColumn;
+    @FXML
+    private TableColumn<DisasterReport, String> reportSeverityColumn;
+    @FXML
+    private TableColumn<DisasterReport, String> reportLocationColumn;
+    @FXML
+    private TableColumn<DisasterReport, String> reportPriorityColumn;
+    @FXML
+    private TableColumn<DisasterReport, String> reportStatusColumn;
+    @FXML
+    private TextArea reportDetailsArea;
+    @FXML
+    private VBox reportStatusUpdatePane;
+    @FXML
+    private ComboBox<String> reportStatusComboBox;
+    @FXML
+    private Button updateReportStatusButton;
+    @FXML
+    private ComboBox<ResponseTask> reportTaskComboBox;
+    @FXML
+    private ComboBox<String> reportTaskStatusComboBox;
 
-    @FXML private TextField auditSearchField;
-    @FXML private TableView<AuditRecord> auditTable;
-    @FXML private TableColumn<AuditRecord, Integer> auditIdColumn;
-    @FXML private TableColumn<AuditRecord, String> auditWhenColumn;
-    @FXML private TableColumn<AuditRecord, String> auditUserColumn;
-    @FXML private TableColumn<AuditRecord, String> auditActionColumn;
-    @FXML private TableColumn<AuditRecord, String> auditEntityTypeColumn;
-    @FXML private TableColumn<AuditRecord, String> auditEntityLabelColumn;
-    @FXML private TableColumn<AuditRecord, String> auditDetailsColumn;
-    @FXML private BarChart<String, Number> auditActionChart;
+    @FXML
+    private TextField auditSearchField;
+    @FXML
+    private TableView<AuditRecord> auditTable;
+    @FXML
+    private TableColumn<AuditRecord, Integer> auditIdColumn;
+    @FXML
+    private TableColumn<AuditRecord, String> auditWhenColumn;
+    @FXML
+    private TableColumn<AuditRecord, String> auditUserColumn;
+    @FXML
+    private TableColumn<AuditRecord, String> auditActionColumn;
+    @FXML
+    private TableColumn<AuditRecord, String> auditEntityTypeColumn;
+    @FXML
+    private TableColumn<AuditRecord, String> auditEntityLabelColumn;
+    @FXML
+    private TableColumn<AuditRecord, String> auditDetailsColumn;
+    @FXML
+    private BarChart<String, Number> auditActionChart;
 
     private DRSClientService clientService;
     private final ReportValidationService reportValidationService = new ReportValidationService();
@@ -273,6 +401,7 @@ public class MainController {
 
         initializeDuplicateCheckWorkflow();
         initializeFeatureWorkflows();
+        initializeReportSeverityFilter();
         configureReportStatusSelection();
         deleteResponseTaskButton.disableProperty().bind(Bindings.createBooleanBinding(
                 () -> {
@@ -311,6 +440,7 @@ public class MainController {
                 descriptionArea,
                 reportResultArea,
                 searchField,
+                severityFilterComboBox,
                 reportTable,
                 reportStatusComboBox,
                 reportDetailsArea,
@@ -362,6 +492,24 @@ public class MainController {
                 this::refreshAllData,
                 this::showCoordination,
                 this::loadTasksForSelectedReport);
+    }
+
+    private void initializeReportSeverityFilter() {
+        severityFilterComboBox.getItems().setAll(
+                "All Severities",
+                "Low",
+                "Medium",
+                "High",
+                "Critical"
+        );
+
+        severityFilterComboBox.getSelectionModel().selectFirst();
+
+        severityFilterComboBox.setOnAction(event -> {
+            if (reportWorkflow != null) {
+                reportWorkflow.searchReports();
+            }
+        });
     }
 
     @FXML
