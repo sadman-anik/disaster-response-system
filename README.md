@@ -217,8 +217,9 @@ The **Manage Resources** tab allows the user to:
 - Recommend resources for a selected disaster report
 - Allocate resources to a disaster report
 - Track resource allocation
+- See critical department resource alerts when matching resources fall to the low threshold
 
-The system updates the available resource quantity after allocation.
+The system updates the available resource quantity after allocation. If a resource reaches the critical low threshold, the system alerts administrators that matching departments may not be able to respond effectively.
 
 ---
 
@@ -232,9 +233,11 @@ It includes:
 - Critical reports
 - Open tasks
 - Available resources
+- Critical resource alert count
 - Reports by status graph
 - In-progress tasks by department graph
 - Available resources graph
+- Department resource alert table
 
 This improves usability by giving a quick overview of the current disaster response situation.
 
