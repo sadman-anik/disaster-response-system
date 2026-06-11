@@ -312,6 +312,8 @@
                             <TextField fx:id="searchField" promptText="Search by title, type, location, status or priority" HBox.hgrow="ALWAYS" />
 
                             <ComboBox fx:id="severityFilterComboBox" promptText="All Severities" prefWidth="160" />
+                            
+                            <ComboBox fx:id="statusFilterComboBox" promptText="All Report Statuses" prefWidth="170" />
 
                             <Button text="Search" onAction="#searchReports" styleClass="secondary-button" />
                         </HBox>

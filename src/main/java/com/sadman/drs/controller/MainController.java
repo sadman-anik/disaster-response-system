@@ -271,6 +271,8 @@ public class MainController {
     @FXML
     private ComboBox<String> severityFilterComboBox;
     @FXML
+    private ComboBox<String> statusFilterComboBox;
+    @FXML
     private TableView<DisasterReport> reportTable;
     @FXML
     private TableColumn<DisasterReport, String> reportDisplayColumn;
@@ -402,6 +404,7 @@ public class MainController {
         initializeDuplicateCheckWorkflow();
         initializeFeatureWorkflows();
         initializeReportSeverityFilter();
+        initializeReportStatusFilter();
         configureReportStatusSelection();
         deleteResponseTaskButton.disableProperty().bind(Bindings.createBooleanBinding(
                 () -> {
@@ -441,6 +444,7 @@ public class MainController {
                 reportResultArea,
                 searchField,
                 severityFilterComboBox,
+                statusFilterComboBox,
                 reportTable,
                 reportStatusComboBox,
                 reportDetailsArea,
@@ -506,6 +510,24 @@ public class MainController {
         severityFilterComboBox.getSelectionModel().selectFirst();
 
         severityFilterComboBox.setOnAction(event -> {
+            if (reportWorkflow != null) {
+                reportWorkflow.searchReports();
+            }
+        });
+    }
+
+    private void initializeReportStatusFilter() {
+        statusFilterComboBox.getItems().setAll(
+                "All Report Statuses",
+                "Reported",
+                "Assessed",
+                "In Progress",
+                "Completed"
+        );
+
+        statusFilterComboBox.getSelectionModel().selectFirst();
+
+        statusFilterComboBox.setOnAction(event -> {
             if (reportWorkflow != null) {
                 reportWorkflow.searchReports();
             }

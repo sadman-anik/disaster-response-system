@@ -37,6 +37,7 @@ public class ReportWorkflow {
     private final TextArea reportResultArea;
     private final TextField searchField;
     private final ComboBox<String> severityFilterComboBox;
+    private final ComboBox<String> statusFilterComboBox;
     private final TableView<DisasterReport> reportTable;
     private final ComboBox<String> reportStatusComboBox;
     private final TextArea reportDetailsArea;
@@ -56,6 +57,7 @@ public class ReportWorkflow {
             TextArea reportResultArea,
             TextField searchField,
             ComboBox<String> severityFilterComboBox,
+            ComboBox<String> statusFilterComboBox,
             TableView<DisasterReport> reportTable,
             ComboBox<String> reportStatusComboBox,
             TextArea reportDetailsArea,
@@ -74,6 +76,7 @@ public class ReportWorkflow {
         this.reportResultArea = reportResultArea;
         this.searchField = searchField;
         this.severityFilterComboBox = severityFilterComboBox;
+        this.statusFilterComboBox = statusFilterComboBox;
         this.reportTable = reportTable;
         this.reportStatusComboBox = reportStatusComboBox;
         this.reportDetailsArea = reportDetailsArea;
@@ -155,26 +158,34 @@ public class ReportWorkflow {
     }
 
     public void searchReports() {
-        String keyword = searchField.getText();
-        String selectedSeverity = FormValueHelper.getValue(severityFilterComboBox);
+    String keyword = searchField.getText();
+    String selectedSeverity = FormValueHelper.getValue(severityFilterComboBox);
+    String selectedStatus = FormValueHelper.getValue(statusFilterComboBox);
 
-        try {
-            List<DisasterReport> reports = FormValueHelper.isBlank(keyword)
-                    ? clientServiceSupplier.get().findAllReports()
-                    : clientServiceSupplier.get().searchReports(keyword.trim());
+    try {
+        List<DisasterReport> reports = FormValueHelper.isBlank(keyword)
+                ? clientServiceSupplier.get().findAllReports()
+                : clientServiceSupplier.get().searchReports(keyword.trim());
 
-            if (!FormValueHelper.isBlank(selectedSeverity)
-                    && !"All Severities".equalsIgnoreCase(selectedSeverity)) {
-                reports = reports.stream()
-                        .filter(report -> selectedSeverity.equalsIgnoreCase(report.getSeverity()))
-                        .toList();
-            }
-
-            reportTable.setItems(FXCollections.observableArrayList(reports));
-        } catch (IOException | ClassNotFoundException exception) {
-            AlertHelper.showError("Search Error", exception.getMessage());
+        if (!FormValueHelper.isBlank(selectedSeverity)
+                && !"All Severities".equalsIgnoreCase(selectedSeverity)) {
+            reports = reports.stream()
+                    .filter(report -> selectedSeverity.equalsIgnoreCase(report.getSeverity()))
+                    .toList();
         }
+
+        if (!FormValueHelper.isBlank(selectedStatus)
+                && !"All Report Statuses".equalsIgnoreCase(selectedStatus)) {
+            reports = reports.stream()
+                    .filter(report -> selectedStatus.equalsIgnoreCase(report.getStatus()))
+                    .toList();
+        }
+
+        reportTable.setItems(FXCollections.observableArrayList(reports));
+    } catch (IOException | ClassNotFoundException exception) {
+        AlertHelper.showError("Search Error", exception.getMessage());
     }
+}
 
     public void updateSelectedReportStatus() {
         DisasterReport selectedReport = reportTable.getSelectionModel().getSelectedItem();
