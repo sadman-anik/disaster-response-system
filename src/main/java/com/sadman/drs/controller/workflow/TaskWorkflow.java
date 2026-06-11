@@ -97,7 +97,7 @@ public class TaskWorkflow {
             taskDescriptionArea.clear();
             refreshAllData.run();
             showCoordination.run();
-        } catch (IOException | ClassNotFoundException exception) {
+        } catch (IOException | ClassNotFoundException | IllegalStateException exception) {
             AlertHelper.showError("Task Error", exception.getMessage());
         }
     }
@@ -194,7 +194,7 @@ public class TaskWorkflow {
 
             coordinationOutputArea.setText("Task #" + task.getTaskId() + " status updated to " + status + ".");
             refreshAllData.run();
-        } catch (IOException | ClassNotFoundException exception) {
+        } catch (IOException | ClassNotFoundException | IllegalStateException exception) {
             AlertHelper.showError("Task Status Update Error", exception.getMessage());
         }
     }

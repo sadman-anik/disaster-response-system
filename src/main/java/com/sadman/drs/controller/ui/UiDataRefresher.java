@@ -46,6 +46,7 @@ public class UiDataRefresher {
             long totalReports = reports.size();
             long criticalReports = reports.stream()
                     .filter(report -> StatusValues.CRITICAL.equalsIgnoreCase(report.getPriorityLevel()))
+                    .filter(report -> !StatusValues.isTerminalReportStatus(report.getStatus()))
                     .count();
             long openTasks = tasks.stream()
                     .filter(task -> !StatusValues.COMPLETED.equalsIgnoreCase(task.getStatus()))
@@ -76,10 +77,11 @@ public class UiDataRefresher {
             ComboBox<DisasterReport> resourceReportComboBox) {
         try {
             var reports = FXCollections.observableArrayList(clientService.findAllReports());
+            var activeReports = reports.filtered(report -> !StatusValues.isTerminalReportStatus(report.getStatus()));
             reportTable.setItems(reports);
-            assessmentReportComboBox.setItems(reports);
-            taskReportComboBox.setItems(reports);
-            resourceReportComboBox.setItems(reports);
+            assessmentReportComboBox.setItems(activeReports);
+            taskReportComboBox.setItems(activeReports);
+            resourceReportComboBox.setItems(activeReports);
         } catch (IOException | ClassNotFoundException exception) {
             showRefreshError("Report Refresh Error", exception.getMessage());
         }
@@ -90,8 +92,9 @@ public class UiDataRefresher {
             TableView<AssessmentResult> assessmentTable,
             ComboBox<DisasterReport> assessmentReportComboBox) {
         try {
+            var reports = FXCollections.observableArrayList(clientService.findAllReports());
             assessmentTable.setItems(FXCollections.observableArrayList(clientService.findAllAssessments()));
-            assessmentReportComboBox.setItems(FXCollections.observableArrayList(clientService.findAllReports()));
+            assessmentReportComboBox.setItems(reports.filtered(report -> !StatusValues.isTerminalReportStatus(report.getStatus())));
         } catch (IOException | ClassNotFoundException exception) {
             showRefreshError("Assessment Refresh Error", exception.getMessage());
         }
@@ -103,7 +106,8 @@ public class UiDataRefresher {
             ComboBox<Department> taskDepartmentComboBox,
             TableView<ResponseTask> taskTable) {
         try {
-            taskReportComboBox.setItems(FXCollections.observableArrayList(clientService.findAllReports()));
+            var reports = FXCollections.observableArrayList(clientService.findAllReports());
+            taskReportComboBox.setItems(reports.filtered(report -> !StatusValues.isTerminalReportStatus(report.getStatus())));
             taskDepartmentComboBox.setItems(FXCollections.observableArrayList(clientService.findAllDepartments()));
             taskTable.setItems(FXCollections.observableArrayList(clientService.findAllTasks()));
         } catch (IOException | ClassNotFoundException exception) {
@@ -135,8 +139,9 @@ public class UiDataRefresher {
             List<Resource> resources = clientService.findAllResources();
             List<DepartmentResourceAlert> resourceAlerts =
                     RESOURCE_ALERT_SERVICE.findCriticalAlerts(clientService.findAllDepartments(), resources);
+            var reports = FXCollections.observableArrayList(clientService.findAllReports());
 
-            resourceReportComboBox.setItems(FXCollections.observableArrayList(clientService.findAllReports()));
+            resourceReportComboBox.setItems(reports.filtered(report -> !StatusValues.isTerminalReportStatus(report.getStatus())));
             resourceComboBox.setItems(FXCollections.observableArrayList(resources));
             resourceTable.setItems(FXCollections.observableArrayList(resources));
             allocationTable.setItems(FXCollections.observableArrayList(clientService.findAllAllocations()));

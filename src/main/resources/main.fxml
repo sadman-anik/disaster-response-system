@@ -324,9 +324,7 @@
                             <Label text="Update Report Workflow Status" styleClass="section-title" />
                             <ComboBox fx:id="reportStatusComboBox" promptText="Choose report status" prefWidth="320" />
                             <HBox spacing="8">
-                                <Button text="Update Status" onAction="#updateSelectedReportStatus" styleClass="secondary-button" />
-                                <Button text="Mark Assessed" onAction="#markSelectedReportAssessed" styleClass="secondary-button" />
-                                <Button text="Complete Report" onAction="#completeSelectedReport" styleClass="primary-button" />
+                                <Button fx:id="updateReportStatusButton" text="Update Status" onAction="#updateSelectedReportStatus" styleClass="primary-button" />
                             </HBox>
                         </VBox>
                         <Separator />

@@ -171,6 +171,13 @@ public class DRSServerRequestProcessor {
         }
 
         DisasterReport report = request.getReport();
+        if (report == null) {
+            return ServerResponse.failure("Report not found.");
+        }
+        DisasterReport existingReport = disasterReportRepository.findById(report.getReportId());
+        if (existingReport != null && StatusValues.isTerminalReportStatus(existingReport.getStatus())) {
+            return ServerResponse.failure("Completed reports cannot be assessed again.");
+        }
         AssessmentResult assessment = assessmentService.assessDisaster(report, request.getDamageLevel(),
                 request.getPeopleAffected(), request.isInfrastructureDamage());
 
@@ -186,6 +193,10 @@ public class DRSServerRequestProcessor {
         if (!(payload instanceof ResponseTask task)) {
             return ServerResponse.failure("Invalid task payload.");
         }
+        DisasterReport report = disasterReportRepository.findById(task.getReportId());
+        if (report != null && StatusValues.isTerminalReportStatus(report.getStatus())) {
+            return ServerResponse.failure("Cannot create tasks for a completed report.");
+        }
         ResponseTask savedTask = responseTaskRepository.save(task);
         auditService.logTaskCreated(currentUser, savedTask);
         return ServerResponse.success("Task created", savedTask);
@@ -194,6 +205,13 @@ public class DRSServerRequestProcessor {
     private ServerResponse handleAllocateResource(Object payload, User currentUser) throws SQLException {
         if (!(payload instanceof AllocateResourceRequest request)) {
             return ServerResponse.failure("Invalid allocation payload.");
+        }
+        DisasterReport report = disasterReportRepository.findById(request.getReportId());
+        if (report == null) {
+            return ServerResponse.failure("Report not found.");
+        }
+        if (StatusValues.isTerminalReportStatus(report.getStatus())) {
+            return ServerResponse.failure("Cannot allocate resources to a completed report.");
         }
         resourceRepository.allocateResource(request.getReportId(), request.getResource(), request.getQuantity(), request.getNotes());
         auditService.logResourceAllocated(currentUser, request.getReportId(), request.getResource(), request.getQuantity());
@@ -205,13 +223,30 @@ public class DRSServerRequestProcessor {
             return ServerResponse.failure("Invalid report status payload.");
         }
         DisasterReport existingReport = disasterReportRepository.findById(request.getReportId());
-        String previousStatus = existingReport == null ? "Unknown" : existingReport.getStatus();
-        disasterReportRepository.updateStatus(request.getReportId(), request.getStatus());
+        if (existingReport == null) {
+            return ServerResponse.failure("Report not found.");
+        }
+        String previousStatus = existingReport.getStatus();
+        if (StatusValues.isTerminalReportStatus(previousStatus)) {
+            return ServerResponse.failure("Completed reports cannot be updated.");
+        }
+
+        String requestedStatus = normalizeReportStatus(request.getStatus());
+        if (StatusValues.isTerminalReportStatus(requestedStatus)) {
+            List<String> incompleteStatuses = responseTaskRepository.findIncompleteStatusesByReportId(request.getReportId());
+            if (!incompleteStatuses.isEmpty()) {
+                return ServerResponse.failure("Report cannot be completed because related tasks are still in "
+                        + String.join(", ", incompleteStatuses) + ".");
+            }
+            resourceRepository.releaseAllocationsForReport(request.getReportId());
+        }
+
+        disasterReportRepository.updateStatus(request.getReportId(), requestedStatus);
         auditService.logReportStatusUpdated(currentUser,
                 request.getReportId(),
-                existingReport == null ? "Report #" + request.getReportId() : existingReport.getReportTitle(),
+                existingReport.getReportTitle(),
                 previousStatus,
-                request.getStatus());
+                requestedStatus);
         return ServerResponse.success("Report status updated", null);
     }
 
@@ -220,11 +255,18 @@ public class DRSServerRequestProcessor {
             return ServerResponse.failure("Invalid task status payload.");
         }
         ResponseTask existingTask = responseTaskRepository.findById(request.getTaskId());
-        String previousStatus = existingTask == null ? "Unknown" : existingTask.getStatus();
+        if (existingTask == null) {
+            return ServerResponse.failure("Task not found.");
+        }
+        DisasterReport report = disasterReportRepository.findById(existingTask.getReportId());
+        if (report != null && StatusValues.isTerminalReportStatus(report.getStatus())) {
+            return ServerResponse.failure("Cannot update tasks for a completed report.");
+        }
+        String previousStatus = existingTask.getStatus();
         responseTaskRepository.updateStatus(request.getTaskId(), request.getStatus());
         auditService.logTaskStatusUpdated(currentUser,
                 request.getTaskId(),
-                existingTask == null ? "Task #" + request.getTaskId() : existingTask.getActivityType(),
+                existingTask.getActivityType(),
                 previousStatus,
                 request.getStatus());
         return ServerResponse.success("Task status updated", null);
@@ -248,11 +290,22 @@ public class DRSServerRequestProcessor {
         return ServerResponse.success("Tasks fetched", responseTaskRepository.findByReportId(request.getReportId()));
     }
 
-    private ServerResponse handleRecommendResources(Object payload) {
+    private ServerResponse handleRecommendResources(Object payload) throws SQLException {
         if (!(payload instanceof DisasterReport report)) {
             return ServerResponse.failure("Invalid recommendation payload.");
         }
+        DisasterReport existingReport = disasterReportRepository.findById(report.getReportId());
+        if (existingReport != null && StatusValues.isTerminalReportStatus(existingReport.getStatus())) {
+            return ServerResponse.failure("Cannot recommend resources for a completed report.");
+        }
         String recommendation = resourceRecommendationService.recommendResources(report.getDisasterType(), report.getSeverity());
         return ServerResponse.success("Resources recommended", recommendation);
+    }
+
+    private String normalizeReportStatus(String status) {
+        if (StatusValues.CLOSED.equalsIgnoreCase(status)) {
+            return StatusValues.COMPLETED;
+        }
+        return status == null ? "" : status.trim();
     }
 }

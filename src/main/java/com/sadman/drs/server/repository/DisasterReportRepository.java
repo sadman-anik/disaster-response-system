@@ -99,7 +99,7 @@ public class DisasterReportRepository {
                 FROM disaster_reports
                 WHERE TRIM(LOWER(disaster_type)) = TRIM(LOWER(?))
                 AND TRIM(LOWER(location)) = TRIM(LOWER(?))
-                AND TRIM(LOWER(status)) NOT IN ('closed')
+                AND TRIM(LOWER(status)) NOT IN ('completed', 'closed')
                 """;
 
         try (Connection connection = DatabaseConnection.getConnection();

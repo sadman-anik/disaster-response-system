@@ -19,8 +19,12 @@ public final class StatusValues {
     public static final String CRITICAL = "Critical";
 
     public static final List<String> PRIORITIES = List.of(LOW, MEDIUM, HIGH, CRITICAL);
-    public static final List<String> REPORT_STATUSES = List.of(REPORTED, ASSESSED, IN_PROGRESS, COMPLETED, CLOSED);
+    public static final List<String> REPORT_STATUSES = List.of(REPORTED, ASSESSED, IN_PROGRESS, COMPLETED);
     public static final List<String> TASK_STATUSES = List.of(PENDING, IN_PROGRESS, COMPLETED);
+
+    public static boolean isTerminalReportStatus(String status) {
+        return COMPLETED.equalsIgnoreCase(status) || CLOSED.equalsIgnoreCase(status);
+    }
 
     private StatusValues() {
     }

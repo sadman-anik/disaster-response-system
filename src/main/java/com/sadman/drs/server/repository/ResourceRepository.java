@@ -97,6 +97,43 @@ public class ResourceRepository {
         }
     }
 
+    public void releaseAllocationsForReport(int reportId) throws SQLException {
+        String totalsSql = """
+                SELECT resource_id, SUM(quantity_allocated) AS allocated_quantity
+                FROM resource_allocations
+                WHERE report_id = ?
+                GROUP BY resource_id
+                """;
+        String releaseSql = "UPDATE resources SET quantity_available = quantity_available + ? WHERE resource_id = ?";
+        String deleteSql = "DELETE FROM resource_allocations WHERE report_id = ?";
+
+        try (Connection connection = DatabaseConnection.getConnection()) {
+            connection.setAutoCommit(false);
+            try (PreparedStatement totalsStatement = connection.prepareStatement(totalsSql);
+                 PreparedStatement releaseStatement = connection.prepareStatement(releaseSql);
+                 PreparedStatement deleteStatement = connection.prepareStatement(deleteSql)) {
+                totalsStatement.setInt(1, reportId);
+                try (ResultSet resultSet = totalsStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        releaseStatement.setInt(1, resultSet.getInt("allocated_quantity"));
+                        releaseStatement.setInt(2, resultSet.getInt("resource_id"));
+                        releaseStatement.addBatch();
+                    }
+                }
+                releaseStatement.executeBatch();
+
+                deleteStatement.setInt(1, reportId);
+                deleteStatement.executeUpdate();
+                connection.commit();
+            } catch (SQLException | RuntimeException exception) {
+                connection.rollback();
+                throw exception;
+            } finally {
+                connection.setAutoCommit(true);
+            }
+        }
+    }
+
     public List<ResourceAllocation> findAllocations() throws SQLException {
         String sql = """
                 SELECT ra.*, r.resource_name

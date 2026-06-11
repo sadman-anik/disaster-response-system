@@ -173,6 +173,10 @@ public class ReportWorkflow {
             AlertHelper.showWarning("Select the new report status.");
             return;
         }
+        if (StatusValues.isTerminalReportStatus(selectedReport.getStatus())) {
+            AlertHelper.showWarning("Completed reports cannot be updated.");
+            return;
+        }
         updateReportStatus(selectedReport, status);
     }
 
@@ -238,7 +242,7 @@ public class ReportWorkflow {
             reportDetailsArea.setText(report.getReportDisplayName() + " status updated to " + status
                     + ".\n\n" + ViewFormatter.buildReportDetails(report, tasks));
             refreshAllData.run();
-        } catch (IOException | ClassNotFoundException exception) {
+        } catch (IOException | ClassNotFoundException | IllegalStateException exception) {
             AlertHelper.showError("Report Status Update Error", exception.getMessage());
         }
     }

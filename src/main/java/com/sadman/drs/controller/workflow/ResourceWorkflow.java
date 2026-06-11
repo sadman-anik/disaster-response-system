@@ -5,6 +5,7 @@ import com.sadman.drs.controller.ui.AlertHelper;
 import com.sadman.drs.model.DepartmentResourceAlert;
 import com.sadman.drs.model.DisasterReport;
 import com.sadman.drs.model.Resource;
+import com.sadman.drs.model.StatusValues;
 import com.sadman.drs.server.service.DepartmentResourceAlertService;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -54,13 +55,17 @@ public class ResourceWorkflow {
             AlertHelper.showWarning("Select a disaster report first.");
             return;
         }
+        if (StatusValues.isTerminalReportStatus(report.getStatus())) {
+            AlertHelper.showWarning("Completed reports cannot receive resource recommendations.");
+            return;
+        }
 
         try {
             clearCriticalAlertLabel();
             String recommendation = clientServiceSupplier.get().recommendResources(report);
             resourceOutputArea.setText("Recommended resources for " + report + ":\n\n" + recommendation
                     + "\n\nThese recommendations are generated automatically based on disaster type and severity.");
-        } catch (IOException | ClassNotFoundException exception) {
+        } catch (IOException | ClassNotFoundException | IllegalStateException exception) {
             AlertHelper.showError("Resource Recommendation Error", exception.getMessage());
         }
     }
@@ -71,6 +76,10 @@ public class ResourceWorkflow {
 
         if (report == null || resource == null) {
             AlertHelper.showWarning("Select report and resource first.");
+            return;
+        }
+        if (StatusValues.isTerminalReportStatus(report.getStatus())) {
+            AlertHelper.showWarning("Completed reports cannot receive resource allocations.");
             return;
         }
 
@@ -93,7 +102,7 @@ public class ResourceWorkflow {
             quantityField.clear();
             refreshAllData.run();
             showResources.run();
-        } catch (IOException | ClassNotFoundException | IllegalArgumentException exception) {
+        } catch (IOException | ClassNotFoundException | IllegalArgumentException | IllegalStateException exception) {
             AlertHelper.showError("Resource Allocation Error", exception.getMessage());
         }
     }

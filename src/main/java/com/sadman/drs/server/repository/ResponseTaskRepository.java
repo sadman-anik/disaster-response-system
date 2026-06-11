@@ -126,6 +126,27 @@ public class ResponseTaskRepository {
         }
     }
 
+    public List<String> findIncompleteStatusesByReportId(int reportId) throws SQLException {
+        String sql = """
+                SELECT DISTINCT status
+                FROM response_tasks
+                WHERE report_id = ?
+                  AND LOWER(status) <> LOWER('Completed')
+                ORDER BY status
+                """;
+        List<String> statuses = new ArrayList<>();
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, reportId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    statuses.add(resultSet.getString("status"));
+                }
+            }
+        }
+        return statuses;
+    }
+
     public long countOpenTasks() throws SQLException {
         String sql = "SELECT COUNT(*) FROM response_tasks WHERE status <> 'Completed'";
         try (Connection connection = DatabaseConnection.getConnection();

@@ -21,6 +21,7 @@ import com.sadman.drs.model.DisasterReport;
 import com.sadman.drs.model.Resource;
 import com.sadman.drs.model.ResourceAllocation;
 import com.sadman.drs.model.ResponseTask;
+import com.sadman.drs.model.StatusValues;
 import com.sadman.drs.model.User;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -35,6 +36,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -169,6 +171,7 @@ public class MainController {
     @FXML private TextArea reportDetailsArea;
     @FXML private VBox reportStatusUpdatePane;
     @FXML private ComboBox<String> reportStatusComboBox;
+    @FXML private Button updateReportStatusButton;
     @FXML private ComboBox<ResponseTask> reportTaskComboBox;
     @FXML private ComboBox<String> reportTaskStatusComboBox;
 
@@ -265,6 +268,7 @@ public class MainController {
 
         initializeDuplicateCheckWorkflow();
         initializeFeatureWorkflows();
+        configureReportStatusSelection();
         resourceAxis.setTickLabelRotation(-35);
     }
 
@@ -636,6 +640,28 @@ public class MainController {
         setButtonAvailable(auditButton, rolePermissionService.canViewAudit(role));
         reportsButton.setDisable(false);
         setButtonAvailable(reportStatusUpdatePane, rolePermissionService.canUpdateReportStatus(role));
+    }
+
+    private void configureReportStatusSelection() {
+        reportTable.setRowFactory(table -> new TableRow<>() {
+            @Override
+            protected void updateItem(DisasterReport report, boolean empty) {
+                super.updateItem(report, empty);
+                if (empty || report == null) {
+                    setStyle("");
+                } else if (StatusValues.isTerminalReportStatus(report.getStatus())) {
+                    setStyle("-fx-background-color: #e6e6e6;");
+                } else {
+                    setStyle("");
+                }
+            }
+        });
+
+        reportTable.getSelectionModel().selectedItemProperty().addListener((obs, oldReport, newReport) -> {
+            boolean terminal = newReport != null && StatusValues.isTerminalReportStatus(newReport.getStatus());
+            reportStatusComboBox.setDisable(terminal);
+            updateReportStatusButton.setDisable(terminal);
+        });
     }
 
     private void setButtonAvailable(Node node, boolean available) {

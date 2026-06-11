@@ -257,7 +257,8 @@ Report statuses include:
 - Assessed
 - In Progress
 - Completed
-- Closed
+
+`Completed` is the final report status. A report can only be completed after all related response tasks are completed. When a report is completed, active resource allocations for that report are released back to the available resource pool.
 
 Task status updates are managed separately from the **Update Task Status** tab.
 
