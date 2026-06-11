@@ -360,8 +360,8 @@ Before running the project, install:
 1. Java JDK 17
 2. Maven
 3. MySQL Server
-4. Visual Studio Code
-5. VS Code Extension Pack for Java
+4. NetBeans or Visual Studio Code
+5. VS Code Extension Pack for Java, if using Visual Studio Code
 
 JavaFX, MySQL Connector/J, and JUnit dependencies are handled by Maven.
 
@@ -404,27 +404,44 @@ The project also provides `database-schema.sql` for manual marking/setup. This s
 
 ## How to Run the Project
 
-Open the project folder in Visual Studio Code or NetBeans.
+For normal use and marking, run the project from NetBeans using `DRSLauncher`.
 
-Make sure MySQL Server is running.
+Before running the project, make sure MySQL Server is running.
 
-### NetBeans Main Class
+### Run Using NetBeans
 
-When opening the project in NetBeans, the IDE may show three runnable main classes:
-
-| Main class | Purpose |
-| --- | --- |
-| `com.sadman.drs.DRSLauncher` | Starts both the DRS server and the JavaFX client. Use this for normal running. |
-| `com.sadman.drs.client.MainApp` | Starts only the JavaFX client. The server must already be running separately. |
-| `com.sadman.drs.server.DRSServer` | Starts only the backend server on `localhost:9090`. |
-
-For normal use and marking, choose:
+1. Open NetBeans.
+2. Open the project folder.
+3. Make sure MySQL Server is running.
+4. Check `src/main/resources/database.properties` and confirm the MySQL username and password are correct for your computer.
+5. Right-click the project and open **Properties**.
+6. Go to **Run**.
+7. Set the default main class to:
 
 ```text
 com.sadman.drs.DRSLauncher
 ```
 
-This single launcher starts the server on port `9090` and then opens the login window.
+8. Run the project.
+
+`DRSLauncher` is the correct main class for marking because it starts both parts of the system:
+
+- the DRS server on `localhost:9090`
+- the JavaFX client login window
+
+NetBeans may show three runnable main classes:
+
+| Main class | Purpose |
+| --- | --- |
+| `com.sadman.drs.DRSLauncher` | Starts both the DRS server and the JavaFX client. Use this for normal running and marking. |
+| `com.sadman.drs.client.MainApp` | Starts only the JavaFX client. The server must already be running separately. |
+| `com.sadman.drs.server.DRSServer` | Starts only the backend server on `localhost:9090`. |
+
+Select `com.sadman.drs.DRSLauncher` so the server and client start together.
+
+During startup, the system connects to MySQL and automatically prepares the required database and tables if they do not already exist.
+
+### Alternative Maven Run
 
 You can run the app directly with Maven from the project root:
 
@@ -439,8 +456,6 @@ Or use the provided script:
 ```
 
 The application will start as a JavaFX desktop application.
-
-During startup, the system connects to MySQL and automatically prepares the required database and tables if they do not already exist.
 
 The `run.sh` script performs environment checks for Java and Maven before launching the application.
 
