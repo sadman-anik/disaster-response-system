@@ -134,8 +134,8 @@
                                     disable="true" />
                         </HBox>
                         <Label fx:id="duplicateWarningLabel"
-                            text="Please check duplicate before submitting."
-                            styleClass="info-label" />
+                               text="Please check duplicate before submitting."
+                               styleClass="info-label" />
                     </VBox>
                     <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS">
                         <Label text="Generated Result" styleClass="section-title" />
@@ -308,8 +308,11 @@
                 <HBox spacing="18">
                     <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS">
                         <Label text="Search &amp; View Disaster Reports" styleClass="section-title" />
-                        <HBox spacing="10">
+                        <HBox spacing="10" alignment="CENTER_LEFT">
                             <TextField fx:id="searchField" promptText="Search by title, type, location, status or priority" HBox.hgrow="ALWAYS" />
+
+                            <ComboBox fx:id="severityFilterComboBox" promptText="All Severities" prefWidth="160" />
+
                             <Button text="Search" onAction="#searchReports" styleClass="secondary-button" />
                         </HBox>
                         <TableView fx:id="reportTable" VBox.vgrow="ALWAYS">
