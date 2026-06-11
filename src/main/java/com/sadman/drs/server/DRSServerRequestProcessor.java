@@ -18,6 +18,7 @@ import com.sadman.drs.protocol.SearchReportsRequest;
 import com.sadman.drs.protocol.ServerAction;
 import com.sadman.drs.protocol.ServerRequest;
 import com.sadman.drs.protocol.ServerResponse;
+import com.sadman.drs.protocol.TaskIdRequest;
 import com.sadman.drs.protocol.AuditSearchRequest;
 import com.sadman.drs.protocol.UpdateReportStatusRequest;
 import com.sadman.drs.protocol.UpdateTaskStatusRequest;
@@ -115,6 +116,7 @@ public class DRSServerRequestProcessor {
                 case FETCH_RESOURCES -> ServerResponse.success("Resources fetched", resourceRepository.findAll());
                 case FETCH_ALLOCATIONS -> ServerResponse.success("Allocations fetched", resourceRepository.findAllocations());
                 case CREATE_RESPONSE_TASK -> handleCreateResponseTask(request.getPayload(), currentUser);
+                case DELETE_RESPONSE_TASK -> handleDeleteResponseTask(request.getPayload(), currentUser);
                 case ALLOCATE_RESOURCE -> handleAllocateResource(request.getPayload(), currentUser);
                 case UPDATE_REPORT_STATUS -> handleUpdateReportStatus(request.getPayload(), currentUser);
                 case UPDATE_TASK_STATUS -> handleUpdateTaskStatus(request.getPayload(), currentUser);
@@ -202,6 +204,28 @@ public class DRSServerRequestProcessor {
         return ServerResponse.success("Task created", savedTask);
     }
 
+    private ServerResponse handleDeleteResponseTask(Object payload, User currentUser) throws SQLException {
+        if (!(payload instanceof TaskIdRequest request)) {
+            return ServerResponse.failure("Invalid task delete payload.");
+        }
+        ResponseTask existingTask = responseTaskRepository.findById(request.getTaskId());
+        if (existingTask == null) {
+            return ServerResponse.failure("Task not found.");
+        }
+        DisasterReport report = disasterReportRepository.findById(existingTask.getReportId());
+        if (report != null && StatusValues.isTerminalReportStatus(report.getStatus())) {
+            return ServerResponse.failure("Cannot delete tasks for a completed report.");
+        }
+        if (!StatusValues.PENDING.equalsIgnoreCase(existingTask.getStatus())) {
+            return ServerResponse.failure("Only pending response tasks can be deleted.");
+        }
+
+        resourceRepository.releaseAllocationsForTask(request.getTaskId());
+        responseTaskRepository.deleteById(request.getTaskId());
+        auditService.logTaskDeleted(currentUser, existingTask);
+        return ServerResponse.success("Task deleted", null);
+    }
+
     private ServerResponse handleAllocateResource(Object payload, User currentUser) throws SQLException {
         if (!(payload instanceof AllocateResourceRequest request)) {
             return ServerResponse.failure("Invalid allocation payload.");
@@ -217,8 +241,8 @@ public class DRSServerRequestProcessor {
         if (task == null || task.getReportId() != request.getReportId()) {
             return ServerResponse.failure("Select a valid response task for this report before allocating resources.");
         }
-        if (StatusValues.COMPLETED.equalsIgnoreCase(task.getStatus())) {
-            return ServerResponse.failure("Cannot allocate resources to a completed task.");
+        if (!StatusValues.IN_PROGRESS.equalsIgnoreCase(task.getStatus())) {
+            return ServerResponse.failure("Resources can only be assigned to tasks that are In Progress.");
         }
         resourceRepository.allocateResource(request.getReportId(), request.getTaskId(), request.getResource(),
                 request.getQuantity(), request.getNotes());

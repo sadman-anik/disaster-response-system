@@ -197,7 +197,11 @@
                         <TextArea fx:id="coordinationOutputArea" editable="false" wrapText="true" prefRowCount="5" />
                     </VBox>
                     <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS">
-                        <Label text="Response Task List" styleClass="section-title" />
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <Label text="Response Task List" styleClass="section-title" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Button fx:id="deleteResponseTaskButton" text="Delete Selected Task" onAction="#deleteSelectedResponseTask" styleClass="danger-button" />
+                        </HBox>
                         <TableView fx:id="taskTable" VBox.vgrow="ALWAYS">
                             <columns>
                                 <TableColumn fx:id="taskIdColumn" text="ID" prefWidth="55" />

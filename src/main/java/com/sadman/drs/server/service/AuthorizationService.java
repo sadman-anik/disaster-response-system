@@ -49,6 +49,7 @@ public class AuthorizationService {
                 ServerAction.FETCH_RESOURCES,
                 ServerAction.FETCH_ALLOCATIONS,
                 ServerAction.CREATE_RESPONSE_TASK,
+                ServerAction.DELETE_RESPONSE_TASK,
                 ServerAction.UPDATE_TASK_STATUS,
                 ServerAction.FETCH_TASKS_BY_REPORT,
                 ServerAction.RECOMMEND_RESOURCES

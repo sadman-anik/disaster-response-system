@@ -192,6 +192,32 @@
     -fx-cursor: default;
 }
 
+.danger-button {
+    -fx-background-color: #fff1f1;
+    -fx-text-fill: #8f1d1d;
+    -fx-font-weight: bold;
+    -fx-padding: 10 16;
+    -fx-background-radius: 12;
+    -fx-border-color: #f0b8b8;
+    -fx-border-radius: 12;
+    -fx-cursor: hand;
+}
+
+.danger-button:hover {
+    -fx-background-color: #ffe0e0;
+}
+
+.danger-button:pressed {
+    -fx-background-color: #ffd0d0;
+}
+
+.danger-button:disabled {
+    -fx-background-color: #f7eeee;
+    -fx-text-fill: #a78686;
+    -fx-opacity: 0.75;
+    -fx-cursor: default;
+}
+
 /* Duplicate check / validation message styles */
 .warning-text {
     -fx-text-fill: #9a5b00;

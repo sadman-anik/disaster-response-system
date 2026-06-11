@@ -31,12 +31,13 @@
 | FR7 | The system shall calculate priority score and priority level from assessment data. |
 | FR8 | The system shall automatically create standard response tasks after an assessment is saved. |
 | FR9 | The system shall allow department officers to update assigned response task status. |
-| FR10 | The system shall allow resource officers to recommend and allocate emergency resources. |
-| FR11 | The system shall update resource availability after resource allocation. |
+| FR10 | The system shall allow resource officers to recommend emergency resources and allocate resources to a selected response task. |
+| FR11 | The system shall update resource availability after task-based resource allocation and release those resources when the related task is completed. |
 | FR12 | The system shall allow authorised users to search and view disaster reports. |
-| FR13 | The system shall allow administrators to update report workflow status. |
-| FR14 | The system shall provide dashboard charts for reports, tasks, and available resources. |
+| FR13 | The system shall allow administrators to update report workflow status, but prevent a report from being completed while related response tasks are still incomplete. |
+| FR14 | The system shall provide dashboard charts and summary counts for reports, tasks, available resources, and critical resource alerts. |
 | FR15 | The system shall maintain audit records for important actions such as report submission, assessment, resource allocation, and task updates. |
+| FR16 | The system shall show critical department resource warnings when available resources are below the required threshold for active response tasks. |
 
 ### 2.2 Non-Functional Requirements
 
@@ -91,6 +92,7 @@
 | Duplicate Disaster Report Detection | The system checks whether an active disaster report already exists with similar disaster type and location. This helps prevent repeated reports for the same incident. |
 | Emergency Resource Recommendation | The system recommends emergency resources based on disaster type and severity, such as fire trucks for fire incidents or rescue boats for floods. |
 | Evacuation Advice Generator | The system generates context-specific evacuation and safety advice based on disaster type and severity. |
+| Critical Department Resource Alerts | The dashboard and resource page show warnings when a department has active response tasks but the matching resource quantity is critically low. |
 
 ## 3. Design Specifications
 
@@ -114,7 +116,7 @@ The application uses a layered MVC-style architecture:
 
 Diagram image for report: `docs/diagrams/use-case-diagram.png`
 
-Insert the PNG image into the final Word report. The diagram covers the six application roles: Admin, Reporter, Assessment Officer, Resource Officer, Department Officer, and Auditor. It also shows the key DRS-Enhanced use cases: login/registration, report submission, duplicate checking, disaster assessment, evacuation advice generation, response task creation, task status updates, resource recommendation, resource allocation, report status updates, dashboard viewing, and audit log viewing.
+Insert the PNG image into the final Word report. The diagram covers the six application roles: Admin, Reporter, Assessment Officer, Resource Officer, Department Officer, and Auditor. It also shows the key DRS-Enhanced use cases: login/registration, report submission, duplicate checking, disaster assessment, evacuation advice generation, response task creation, task status updates, resource recommendation, task-based resource allocation, resource alert viewing, report status updates, dashboard viewing, and audit log viewing.
 
 ### 3.3 Class Diagram
 
@@ -131,7 +133,7 @@ Diagram images for report:
 3. `docs/diagrams/sequence-assessment-auto-task.png`
 4. `docs/diagrams/sequence-resource-allocation.png`
 
-Insert these PNG images into the final Word report. Together they show the main client-server flows: login, disaster report submission with duplicate checking, disaster assessment with automatic response task creation, and resource recommendation/allocation.
+Insert these PNG images into the final Word report. Together they show the main client-server flows: login, disaster report submission with duplicate checking, disaster assessment with automatic response task creation, and resource recommendation/task-based resource allocation.
 
 ### 3.5 ERD
 
@@ -155,6 +157,7 @@ Important relationships:
 - One disaster report can have many assessments.
 - One disaster report can have many response tasks.
 - One department can be assigned many response tasks.
+- One response task can have many resource allocations.
 - One disaster report can have many resource allocations through its response tasks.
 - One resource can appear in many resource allocations.
 - Audit events record important changes made by users.
@@ -175,6 +178,13 @@ Important relationships:
 | T10 | Authorization | Reporter tries resource allocation | Access denied | Pass, covered by `AuthorizationServiceTest.reporterCanSubmitReportsButCannotAllocateResources` |
 | T11 | Secure transport utility | Plain message encrypted/decrypted | Encrypted text differs from original and decrypts correctly | Pass, covered by `SecurityUtilityTest` |
 | T12 | Dashboard chart data | Seeded reports/resources/tasks | Dashboard displays totals and graphs | Pass |
+| T13 | Critical resource alert count | Active response task exists for a department and matching resource quantity is below threshold | Dashboard Resource Alerts card shows the warning count and Resources page lists the alert | Pass |
+| T14 | Task-based resource allocation | Select active report, select an In Progress response task, choose resource and quantity | Allocation is saved against the selected task and available resource quantity decreases | Pass |
+| T15 | Resource release after task completion | Complete the response task that has an allocated resource | Allocation is released and resource quantity is restored | Pass |
+| T16 | Block report completion with incomplete tasks | Report has related tasks in Pending or In Progress | Popup error explains the remaining task statuses and report is not completed | Pass |
+| T17 | Complete report after tasks complete | All response tasks for the report are Completed | Report status changes to Completed, row becomes light gray, and status update is disabled | Pass |
+| T18 | Hide completed reports from allocation | Report status is Completed | Report is not shown in assessment/task/resource allocation dropdowns | Pass |
+| T19 | Delete pending response task | Select a Pending auto-generated or custom task from the Response Task List and confirm deletion | Task is removed from the list, related resource allocations are released, and dashboard/task data refreshes | Pass |
 
 ## 5. Evidence of Automated Testing
 
@@ -191,7 +201,7 @@ mvn test
 2. Test result showing:
 
 ```text
-Tests run: 21, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 26, Failures: 0, Errors: 0, Skipped: 0
 BUILD SUCCESS
 ```
 
@@ -201,6 +211,17 @@ BUILD SUCCESS
 - `src/test/java/com/sadman/drs/service/CreativeFeatureServiceTest.java`
 - `src/test/java/com/sadman/drs/server/service/AuthorizationServiceTest.java`
 - `src/test/java/com/sadman/drs/security/SecurityUtilityTest.java`
+- `src/test/java/com/sadman/drs/model/StatusValuesTest.java`
+
+Recommended manual workflow screenshots for the new resource/status rules:
+
+1. Dashboard showing the Resource Alerts count card.
+2. Resources page showing the Critical Department Resource Alerts table.
+3. Resource allocation page showing a selected report, selected response task, and allocated resource.
+4. Task page after changing the related task to Completed, with the resource quantity restored.
+5. Error popup when trying to complete a report while related tasks are still Pending or In Progress.
+6. Report table showing a Completed report row in light gray with the status update control disabled.
+7. Response Task List showing the Delete Selected Task button and the refreshed task list after deletion.
 
 ## 6. Software Prototype Submission Checklist
 

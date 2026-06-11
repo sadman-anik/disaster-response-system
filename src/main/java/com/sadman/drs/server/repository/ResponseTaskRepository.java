@@ -126,6 +126,15 @@ public class ResponseTaskRepository {
         }
     }
 
+    public void deleteById(int taskId) throws SQLException {
+        String sql = "DELETE FROM response_tasks WHERE task_id = ?";
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, taskId);
+            statement.executeUpdate();
+        }
+    }
+
     public List<String> findIncompleteStatusesByReportId(int reportId) throws SQLException {
         String sql = """
                 SELECT DISTINCT status

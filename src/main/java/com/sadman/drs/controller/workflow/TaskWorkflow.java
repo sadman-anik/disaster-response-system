@@ -9,6 +9,8 @@ import com.sadman.drs.model.DisasterReport;
 import com.sadman.drs.model.ResponseTask;
 import com.sadman.drs.model.StatusValues;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 
@@ -99,6 +101,37 @@ public class TaskWorkflow {
             showCoordination.run();
         } catch (IOException | ClassNotFoundException | IllegalStateException exception) {
             AlertHelper.showError("Task Error", exception.getMessage());
+        }
+    }
+
+    public void deleteSelectedResponseTask() {
+        ResponseTask selectedTask = taskTable.getSelectionModel().getSelectedItem();
+        if (selectedTask == null) {
+            AlertHelper.showWarning("Select a response task from the Response Task List first.");
+            return;
+        }
+        if (!StatusValues.PENDING.equalsIgnoreCase(selectedTask.getStatus())) {
+            AlertHelper.showWarning("Only pending response tasks can be deleted.");
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Delete Response Task");
+        confirm.setHeaderText(null);
+        confirm.setContentText("Delete task #" + selectedTask.getTaskId() + " (" + selectedTask.getActivityType()
+                + ")? Any allocated resources for this task will be released.");
+        if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+            return;
+        }
+
+        try {
+            clientServiceSupplier.get().deleteResponseTask(selectedTask.getTaskId());
+            coordinationOutputArea.setText("Task #" + selectedTask.getTaskId()
+                    + " deleted. Any allocated resources for that task were released.");
+            refreshAllData.run();
+            showCoordination.run();
+        } catch (IOException | ClassNotFoundException | IllegalStateException exception) {
+            AlertHelper.showError("Task Delete Error", exception.getMessage());
         }
     }
 

@@ -19,6 +19,7 @@ import com.sadman.drs.protocol.SearchReportsRequest;
 import com.sadman.drs.protocol.ServerAction;
 import com.sadman.drs.protocol.ServerRequest;
 import com.sadman.drs.protocol.ServerResponse;
+import com.sadman.drs.protocol.TaskIdRequest;
 import com.sadman.drs.protocol.UpdateReportStatusRequest;
 import com.sadman.drs.protocol.UpdateTaskStatusRequest;
 import com.sadman.drs.protocol.UserRegistrationRequest;
@@ -107,6 +108,10 @@ public class DRSClientService implements AutoCloseable {
 
     public ResponseTask createResponseTask(ResponseTask task) throws IOException, ClassNotFoundException {
         return sendPayload(ServerAction.CREATE_RESPONSE_TASK, task, ResponseTask.class);
+    }
+
+    public void deleteResponseTask(int taskId) throws IOException, ClassNotFoundException {
+        send(ServerAction.DELETE_RESPONSE_TASK, new TaskIdRequest(taskId));
     }
 
     public void allocateResource(int reportId, int taskId, Resource resource, int quantity, String notes)

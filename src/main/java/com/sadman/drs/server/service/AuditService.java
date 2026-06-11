@@ -78,6 +78,15 @@ public class AuditService {
                 "Status changed from '" + previousStatus + "' to '" + newStatus + "'.");
     }
 
+    public void logTaskDeleted(User user, ResponseTask task) throws SQLException {
+        log(user,
+                "Task",
+                task.getTaskId(),
+                task.getActivityType(),
+                "Task Deleted",
+                "Deleted task for report " + task.getReportId() + " and released any allocated resources.");
+    }
+
     private void log(User user, String entityType, int entityId, String entityLabel,
                      String actionType, String changeDetails) throws SQLException {
         if (user == null) {

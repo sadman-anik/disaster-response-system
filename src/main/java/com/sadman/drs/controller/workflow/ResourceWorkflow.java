@@ -90,6 +90,10 @@ public class ResourceWorkflow {
             AlertHelper.showWarning("Completed reports cannot receive resource allocations.");
             return;
         }
+        if (!StatusValues.IN_PROGRESS.equalsIgnoreCase(task.getStatus())) {
+            AlertHelper.showWarning("Resources can only be assigned to tasks that are In Progress.");
+            return;
+        }
 
         int quantity;
         try {
@@ -123,7 +127,7 @@ public class ResourceWorkflow {
         }
         try {
             List<ResponseTask> tasks = clientServiceSupplier.get().findTasksByReportId(report.getReportId()).stream()
-                    .filter(task -> !StatusValues.COMPLETED.equalsIgnoreCase(task.getStatus()))
+                    .filter(task -> StatusValues.IN_PROGRESS.equalsIgnoreCase(task.getStatus()))
                     .toList();
             resourceTaskComboBox.setItems(FXCollections.observableArrayList(tasks));
         } catch (IOException | ClassNotFoundException exception) {

@@ -23,6 +23,7 @@ import com.sadman.drs.model.ResourceAllocation;
 import com.sadman.drs.model.ResponseTask;
 import com.sadman.drs.model.StatusValues;
 import com.sadman.drs.model.User;
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -122,6 +123,7 @@ public class MainController {
     @FXML private TableColumn<ResponseTask, String> taskActivityColumn;
     @FXML private TableColumn<ResponseTask, String> taskPriorityColumn;
     @FXML private TableColumn<ResponseTask, String> taskStatusColumn;
+    @FXML private Button deleteResponseTaskButton;
 
     @FXML private TableView<Department> departmentTable;
     @FXML private TableColumn<Department, Integer> departmentIdColumn;
@@ -272,6 +274,12 @@ public class MainController {
         initializeDuplicateCheckWorkflow();
         initializeFeatureWorkflows();
         configureReportStatusSelection();
+        deleteResponseTaskButton.disableProperty().bind(Bindings.createBooleanBinding(
+                () -> {
+                    ResponseTask selectedTask = taskTable.getSelectionModel().getSelectedItem();
+                    return selectedTask == null || !StatusValues.PENDING.equalsIgnoreCase(selectedTask.getStatus());
+                },
+                taskTable.getSelectionModel().selectedItemProperty()));
         resourceAxis.setTickLabelRotation(-35);
     }
 
@@ -459,6 +467,11 @@ public class MainController {
     @FXML
     private void createResponseTask() {
         taskWorkflow.createResponseTask();
+    }
+
+    @FXML
+    private void deleteSelectedResponseTask() {
+        taskWorkflow.deleteSelectedResponseTask();
     }
 
     @FXML

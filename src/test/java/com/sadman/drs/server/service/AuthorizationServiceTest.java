@@ -36,6 +36,7 @@ class AuthorizationServiceTest {
 
         assertTrue(authorizationService.isAuthorized(assessmentOfficer, ServerAction.SAVE_ASSESSMENT));
         assertTrue(authorizationService.isAuthorized(assessmentOfficer, ServerAction.CREATE_RESPONSE_TASK));
+        assertTrue(authorizationService.isAuthorized(assessmentOfficer, ServerAction.DELETE_RESPONSE_TASK));
         assertTrue(authorizationService.isAuthorized(assessmentOfficer, ServerAction.UPDATE_TASK_STATUS));
         assertFalse(authorizationService.isAuthorized(assessmentOfficer, ServerAction.ALLOCATE_RESOURCE));
     }
@@ -46,6 +47,7 @@ class AuthorizationServiceTest {
 
         assertTrue(authorizationService.isAuthorized(resourceOfficer, ServerAction.ALLOCATE_RESOURCE));
         assertTrue(authorizationService.isAuthorized(resourceOfficer, ServerAction.RECOMMEND_RESOURCES));
+        assertFalse(authorizationService.isAuthorized(resourceOfficer, ServerAction.DELETE_RESPONSE_TASK));
         assertFalse(authorizationService.isAuthorized(resourceOfficer, ServerAction.UPDATE_REPORT_STATUS));
     }
 
@@ -57,6 +59,7 @@ class AuthorizationServiceTest {
         assertTrue(authorizationService.isAuthorized(auditor, ServerAction.SEARCH_AUDIT_EVENTS));
         assertFalse(authorizationService.isAuthorized(auditor, ServerAction.SUBMIT_REPORT));
         assertFalse(authorizationService.isAuthorized(auditor, ServerAction.UPDATE_TASK_STATUS));
+        assertFalse(authorizationService.isAuthorized(auditor, ServerAction.DELETE_RESPONSE_TASK));
     }
 
     @Test
