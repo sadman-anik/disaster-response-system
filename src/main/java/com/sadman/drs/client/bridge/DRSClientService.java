@@ -109,8 +109,9 @@ public class DRSClientService implements AutoCloseable {
         return sendPayload(ServerAction.CREATE_RESPONSE_TASK, task, ResponseTask.class);
     }
 
-    public void allocateResource(int reportId, Resource resource, int quantity, String notes) throws IOException, ClassNotFoundException {
-        send(ServerAction.ALLOCATE_RESOURCE, new AllocateResourceRequest(reportId, resource, quantity, notes));
+    public void allocateResource(int reportId, int taskId, Resource resource, int quantity, String notes)
+            throws IOException, ClassNotFoundException {
+        send(ServerAction.ALLOCATE_RESOURCE, new AllocateResourceRequest(reportId, taskId, resource, quantity, notes));
     }
 
     public void updateReportStatus(int reportId, String status) throws IOException, ClassNotFoundException {

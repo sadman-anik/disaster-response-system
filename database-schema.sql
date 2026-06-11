@@ -64,12 +64,15 @@ CREATE TABLE IF NOT EXISTS resources (
 CREATE TABLE IF NOT EXISTS resource_allocations (
     allocation_id INT AUTO_INCREMENT PRIMARY KEY,
     report_id INT NOT NULL,
+    task_id INT NOT NULL,
     resource_id INT NOT NULL,
     quantity_allocated INT NOT NULL,
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_allocation_report FOREIGN KEY (report_id)
         REFERENCES disaster_reports(report_id) ON DELETE CASCADE,
+    CONSTRAINT fk_allocation_task FOREIGN KEY (task_id)
+        REFERENCES response_tasks(task_id) ON DELETE CASCADE,
     CONSTRAINT fk_allocation_resource FOREIGN KEY (resource_id)
         REFERENCES resources(resource_id) ON DELETE RESTRICT
 );

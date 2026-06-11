@@ -1,14 +1,12 @@
 package com.sadman.drs.server.config;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- * Creates and migrates the MySQL schema used by the DRS server.
+ * Creates the MySQL schema used by the DRS server.
  */
 public class DatabaseInitializer {
 
@@ -46,14 +44,6 @@ public class DatabaseInitializer {
                         recommended_resources TEXT,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
-                    """);
-
-            ensureColumnExists(connection, "disaster_reports", "report_title",
-                    "VARCHAR(150) NOT NULL DEFAULT 'Untitled Disaster Report'");
-            statement.executeUpdate("""
-                    UPDATE disaster_reports
-                    SET report_title = CONCAT(disaster_type, ' at ', location)
-                    WHERE report_title IS NULL OR report_title = '' OR report_title = 'Untitled Disaster Report'
                     """);
 
             statement.executeUpdate("""
@@ -115,12 +105,16 @@ public class DatabaseInitializer {
                     CREATE TABLE IF NOT EXISTS resource_allocations (
                         allocation_id INT AUTO_INCREMENT PRIMARY KEY,
                         report_id INT NOT NULL,
+                        task_id INT NOT NULL,
                         resource_id INT NOT NULL,
                         quantity_allocated INT NOT NULL,
                         notes TEXT,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         CONSTRAINT fk_allocation_report
                             FOREIGN KEY (report_id) REFERENCES disaster_reports(report_id)
+                            ON DELETE CASCADE,
+                        CONSTRAINT fk_allocation_task
+                            FOREIGN KEY (task_id) REFERENCES response_tasks(task_id)
                             ON DELETE CASCADE,
                         CONSTRAINT fk_allocation_resource
                             FOREIGN KEY (resource_id) REFERENCES resources(resource_id)
@@ -150,19 +144,6 @@ public class DatabaseInitializer {
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
                     """);
-        }
-    }
-
-    private void ensureColumnExists(Connection connection, String tableName, String columnName,
-                                    String columnDefinition) throws SQLException {
-        DatabaseMetaData metaData = connection.getMetaData();
-        try (ResultSet columns = metaData.getColumns(connection.getCatalog(), null, tableName, columnName)) {
-            if (!columns.next()) {
-                try (Statement statement = connection.createStatement()) {
-                    statement.executeUpdate("ALTER TABLE " + tableName + " ADD COLUMN "
-                            + columnName + " " + columnDefinition);
-                }
-            }
         }
     }
 }

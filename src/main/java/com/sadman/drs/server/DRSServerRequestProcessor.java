@@ -213,7 +213,15 @@ public class DRSServerRequestProcessor {
         if (StatusValues.isTerminalReportStatus(report.getStatus())) {
             return ServerResponse.failure("Cannot allocate resources to a completed report.");
         }
-        resourceRepository.allocateResource(request.getReportId(), request.getResource(), request.getQuantity(), request.getNotes());
+        ResponseTask task = responseTaskRepository.findById(request.getTaskId());
+        if (task == null || task.getReportId() != request.getReportId()) {
+            return ServerResponse.failure("Select a valid response task for this report before allocating resources.");
+        }
+        if (StatusValues.COMPLETED.equalsIgnoreCase(task.getStatus())) {
+            return ServerResponse.failure("Cannot allocate resources to a completed task.");
+        }
+        resourceRepository.allocateResource(request.getReportId(), request.getTaskId(), request.getResource(),
+                request.getQuantity(), request.getNotes());
         auditService.logResourceAllocated(currentUser, request.getReportId(), request.getResource(), request.getQuantity());
         return ServerResponse.success("Resource allocated", null);
     }
@@ -264,6 +272,9 @@ public class DRSServerRequestProcessor {
         }
         String previousStatus = existingTask.getStatus();
         responseTaskRepository.updateStatus(request.getTaskId(), request.getStatus());
+        if (StatusValues.COMPLETED.equalsIgnoreCase(request.getStatus())) {
+            resourceRepository.releaseAllocationsForTask(request.getTaskId());
+        }
         auditService.logTaskStatusUpdated(currentUser,
                 request.getTaskId(),
                 existingTask.getActivityType(),

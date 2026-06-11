@@ -139,6 +139,7 @@ public class MainController {
     @FXML private ComboBox<String> departmentTaskStatusComboBox;
 
     @FXML private ComboBox<DisasterReport> resourceReportComboBox;
+    @FXML private ComboBox<ResponseTask> resourceTaskComboBox;
     @FXML private ComboBox<Resource> resourceComboBox;
     @FXML private TextField quantityField;
     @FXML private TextArea resourceOutputArea;
@@ -151,6 +152,7 @@ public class MainController {
     @FXML private TableView<ResourceAllocation> allocationTable;
     @FXML private TableColumn<ResourceAllocation, Integer> allocationIdColumn;
     @FXML private TableColumn<ResourceAllocation, Integer> allocationReportIdColumn;
+    @FXML private TableColumn<ResourceAllocation, String> allocationTaskColumn;
     @FXML private TableColumn<ResourceAllocation, String> allocationResourceColumn;
     @FXML private TableColumn<ResourceAllocation, Integer> allocationQuantityColumn;
     @FXML private Label resourceAlertSummaryLabel;
@@ -240,6 +242,7 @@ public class MainController {
                 resourceQuantityColumn,
                 allocationIdColumn,
                 allocationReportIdColumn,
+                allocationTaskColumn,
                 allocationResourceColumn,
                 allocationQuantityColumn,
                 resourceAlertDepartmentColumn,
@@ -319,6 +322,7 @@ public class MainController {
         resourceWorkflow = new ResourceWorkflow(
                 () -> clientService,
                 resourceReportComboBox,
+                resourceTaskComboBox,
                 resourceComboBox,
                 quantityField,
                 resourceOutputArea,
@@ -402,6 +406,7 @@ public class MainController {
         setVisiblePane(resourcesPane, "Manage Emergency Resources");
         UiDataRefresher.refreshResourceData(clientService,
                 resourceReportComboBox,
+                resourceTaskComboBox,
                 resourceComboBox,
                 resourceTable,
                 allocationTable,
@@ -598,6 +603,7 @@ public class MainController {
         if (rolePermissionService.canManageResources(role)) {
             UiDataRefresher.refreshResourceData(clientService,
                     resourceReportComboBox,
+                    resourceTaskComboBox,
                     resourceComboBox,
                     resourceTable,
                     allocationTable,

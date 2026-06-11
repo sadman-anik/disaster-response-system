@@ -130,6 +130,7 @@ public class UiDataRefresher {
     public static void refreshResourceData(
             DRSClientService clientService,
             ComboBox<DisasterReport> resourceReportComboBox,
+            ComboBox<ResponseTask> resourceTaskComboBox,
             ComboBox<Resource> resourceComboBox,
             TableView<Resource> resourceTable,
             TableView<ResourceAllocation> allocationTable,
@@ -142,6 +143,7 @@ public class UiDataRefresher {
             var reports = FXCollections.observableArrayList(clientService.findAllReports());
 
             resourceReportComboBox.setItems(reports.filtered(report -> !StatusValues.isTerminalReportStatus(report.getStatus())));
+            resourceTaskComboBox.setItems(FXCollections.observableArrayList());
             resourceComboBox.setItems(FXCollections.observableArrayList(resources));
             resourceTable.setItems(FXCollections.observableArrayList(resources));
             allocationTable.setItems(FXCollections.observableArrayList(clientService.findAllAllocations()));

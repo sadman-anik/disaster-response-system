@@ -5,8 +5,10 @@ import com.sadman.drs.controller.ui.AlertHelper;
 import com.sadman.drs.model.DepartmentResourceAlert;
 import com.sadman.drs.model.DisasterReport;
 import com.sadman.drs.model.Resource;
+import com.sadman.drs.model.ResponseTask;
 import com.sadman.drs.model.StatusValues;
 import com.sadman.drs.server.service.DepartmentResourceAlertService;
+import javafx.collections.FXCollections;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -23,6 +25,7 @@ public class ResourceWorkflow {
     private final DepartmentResourceAlertService resourceAlertService = new DepartmentResourceAlertService();
     private final Supplier<DRSClientService> clientServiceSupplier;
     private final ComboBox<DisasterReport> resourceReportComboBox;
+    private final ComboBox<ResponseTask> resourceTaskComboBox;
     private final ComboBox<Resource> resourceComboBox;
     private final TextField quantityField;
     private final TextArea resourceOutputArea;
@@ -32,6 +35,7 @@ public class ResourceWorkflow {
 
     public ResourceWorkflow(Supplier<DRSClientService> clientServiceSupplier,
                             ComboBox<DisasterReport> resourceReportComboBox,
+                            ComboBox<ResponseTask> resourceTaskComboBox,
                             ComboBox<Resource> resourceComboBox,
                             TextField quantityField,
                             TextArea resourceOutputArea,
@@ -40,12 +44,15 @@ public class ResourceWorkflow {
                             Runnable showResources) {
         this.clientServiceSupplier = clientServiceSupplier;
         this.resourceReportComboBox = resourceReportComboBox;
+        this.resourceTaskComboBox = resourceTaskComboBox;
         this.resourceComboBox = resourceComboBox;
         this.quantityField = quantityField;
         this.resourceOutputArea = resourceOutputArea;
         this.resourceCriticalAlertLabel = resourceCriticalAlertLabel;
         this.refreshAllData = refreshAllData;
         this.showResources = showResources;
+        this.resourceReportComboBox.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldReport, newReport) -> loadTasksForReport(newReport));
     }
 
     public void recommendResourcesForSelectedReport() {
@@ -72,10 +79,11 @@ public class ResourceWorkflow {
 
     public void allocateSelectedResource() {
         DisasterReport report = resourceReportComboBox.getValue();
+        ResponseTask task = resourceTaskComboBox.getValue();
         Resource resource = resourceComboBox.getValue();
 
-        if (report == null || resource == null) {
-            AlertHelper.showWarning("Select report and resource first.");
+        if (report == null || task == null || resource == null) {
+            AlertHelper.showWarning("Select report, response task and resource first.");
             return;
         }
         if (StatusValues.isTerminalReportStatus(report.getStatus())) {
@@ -93,7 +101,7 @@ public class ResourceWorkflow {
 
         try {
             DRSClientService clientService = clientServiceSupplier.get();
-            clientService.allocateResource(report.getReportId(), resource, quantity,
+            clientService.allocateResource(report.getReportId(), task.getTaskId(), resource, quantity,
                     "Allocated from Resources page");
             List<DepartmentResourceAlert> alerts = findResourceAlerts(clientService);
             resourceOutputArea.setText("Allocated " + quantity + " x " + resource.getResourceName()
@@ -104,6 +112,23 @@ public class ResourceWorkflow {
             showResources.run();
         } catch (IOException | ClassNotFoundException | IllegalArgumentException | IllegalStateException exception) {
             AlertHelper.showError("Resource Allocation Error", exception.getMessage());
+        }
+    }
+
+    private void loadTasksForReport(DisasterReport report) {
+        resourceTaskComboBox.getSelectionModel().clearSelection();
+        if (report == null) {
+            resourceTaskComboBox.setItems(FXCollections.observableArrayList());
+            return;
+        }
+        try {
+            List<ResponseTask> tasks = clientServiceSupplier.get().findTasksByReportId(report.getReportId()).stream()
+                    .filter(task -> !StatusValues.COMPLETED.equalsIgnoreCase(task.getStatus()))
+                    .toList();
+            resourceTaskComboBox.setItems(FXCollections.observableArrayList(tasks));
+        } catch (IOException | ClassNotFoundException exception) {
+            resourceTaskComboBox.setItems(FXCollections.observableArrayList());
+            AlertHelper.showError("Task Load Error", exception.getMessage());
         }
     }
 

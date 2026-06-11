@@ -215,11 +215,11 @@ The **Manage Resources** tab allows the user to:
 
 - View available emergency resources
 - Recommend resources for a selected disaster report
-- Allocate resources to a disaster report
+- Allocate resources to a selected response task
 - Track resource allocation
 - See critical department resource alerts when matching resources fall to the low threshold
 
-The system updates the available resource quantity after allocation. If a resource reaches the critical low threshold, the system alerts administrators that matching departments may not be able to respond effectively.
+The system updates the available resource quantity after allocation. Allocations are linked to response tasks, and completing a task releases its allocated resources back to the available pool. If a resource reaches the critical low threshold, the system alerts administrators that matching departments may not be able to respond effectively.
 
 ---
 
@@ -258,7 +258,7 @@ Report statuses include:
 - In Progress
 - Completed
 
-`Completed` is the final report status. A report can only be completed after all related response tasks are completed. When a report is completed, active resource allocations for that report are released back to the available resource pool.
+`Completed` is the final report status. A report can only be completed after all related response tasks are completed. Task completion releases resources allocated to that task back to the available resource pool.
 
 Task status updates are managed separately from the **Update Task Status** tab.
 
@@ -330,7 +330,7 @@ The user can update task status as:
 
 ### Step 6: Manage Resources
 
-The user can view available resources, recommend resources for a disaster report, and allocate resources.
+The user can view available resources, recommend resources for a disaster report, and allocate resources to a selected response task.
 
 ### Step 7: Report Status
 

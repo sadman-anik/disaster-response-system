@@ -48,6 +48,7 @@ public class TableSetupHelper {
             TableColumn<Resource, Integer> resourceQuantityColumn,
             TableColumn<ResourceAllocation, Integer> allocationIdColumn,
             TableColumn<ResourceAllocation, Integer> allocationReportIdColumn,
+            TableColumn<ResourceAllocation, String> allocationTaskColumn,
             TableColumn<ResourceAllocation, String> allocationResourceColumn,
             TableColumn<ResourceAllocation, Integer> allocationQuantityColumn,
             TableColumn<DepartmentResourceAlert, String> resourceAlertDepartmentColumn,
@@ -104,6 +105,7 @@ public class TableSetupHelper {
 
         allocationIdColumn.setCellValueFactory(new PropertyValueFactory<>("allocationId"));
         allocationReportIdColumn.setCellValueFactory(new PropertyValueFactory<>("reportId"));
+        allocationTaskColumn.setCellValueFactory(new PropertyValueFactory<>("taskActivityType"));
         allocationResourceColumn.setCellValueFactory(new PropertyValueFactory<>("resourceName"));
         allocationQuantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantityAllocated"));
 

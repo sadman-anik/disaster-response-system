@@ -60,7 +60,7 @@ public class ResourceRepository {
         return resources;
     }
 
-    public void allocateResource(int reportId, Resource resource, int quantity, String notes) throws SQLException {
+    public void allocateResource(int reportId, int taskId, Resource resource, int quantity, String notes) throws SQLException {
         if (quantity <= 0) {
             throw new IllegalArgumentException("Quantity must be greater than zero.");
         }
@@ -69,19 +69,20 @@ public class ResourceRepository {
         }
 
         String allocationSql = """
-                INSERT INTO resource_allocations (report_id, resource_id, quantity_allocated, notes)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO resource_allocations (report_id, task_id, resource_id, quantity_allocated, notes)
+                VALUES (?, ?, ?, ?, ?)
                 """;
         String updateSql = "UPDATE resources SET quantity_available = quantity_available - ? WHERE resource_id = ?";
 
         try (Connection connection = DatabaseConnection.getConnection()) {
             connection.setAutoCommit(false);
             try (PreparedStatement allocationStatement = connection.prepareStatement(allocationSql);
-                 PreparedStatement updateStatement = connection.prepareStatement(updateSql)) {
+                PreparedStatement updateStatement = connection.prepareStatement(updateSql)) {
                 allocationStatement.setInt(1, reportId);
-                allocationStatement.setInt(2, resource.getResourceId());
-                allocationStatement.setInt(3, quantity);
-                allocationStatement.setString(4, notes);
+                allocationStatement.setInt(2, taskId);
+                allocationStatement.setInt(3, resource.getResourceId());
+                allocationStatement.setInt(4, quantity);
+                allocationStatement.setString(5, notes);
                 allocationStatement.executeUpdate();
 
                 updateStatement.setInt(1, quantity);
@@ -97,22 +98,30 @@ public class ResourceRepository {
         }
     }
 
+    public void releaseAllocationsForTask(int taskId) throws SQLException {
+        releaseAllocations("task_id = ?", taskId);
+    }
+
     public void releaseAllocationsForReport(int reportId) throws SQLException {
+        releaseAllocations("report_id = ?", reportId);
+    }
+
+    private void releaseAllocations(String whereClause, int id) throws SQLException {
         String totalsSql = """
                 SELECT resource_id, SUM(quantity_allocated) AS allocated_quantity
                 FROM resource_allocations
-                WHERE report_id = ?
+                WHERE %s
                 GROUP BY resource_id
-                """;
+                """.formatted(whereClause);
         String releaseSql = "UPDATE resources SET quantity_available = quantity_available + ? WHERE resource_id = ?";
-        String deleteSql = "DELETE FROM resource_allocations WHERE report_id = ?";
+        String deleteSql = "DELETE FROM resource_allocations WHERE " + whereClause;
 
         try (Connection connection = DatabaseConnection.getConnection()) {
             connection.setAutoCommit(false);
             try (PreparedStatement totalsStatement = connection.prepareStatement(totalsSql);
                  PreparedStatement releaseStatement = connection.prepareStatement(releaseSql);
                  PreparedStatement deleteStatement = connection.prepareStatement(deleteSql)) {
-                totalsStatement.setInt(1, reportId);
+                totalsStatement.setInt(1, id);
                 try (ResultSet resultSet = totalsStatement.executeQuery()) {
                     while (resultSet.next()) {
                         releaseStatement.setInt(1, resultSet.getInt("allocated_quantity"));
@@ -122,7 +131,7 @@ public class ResourceRepository {
                 }
                 releaseStatement.executeBatch();
 
-                deleteStatement.setInt(1, reportId);
+                deleteStatement.setInt(1, id);
                 deleteStatement.executeUpdate();
                 connection.commit();
             } catch (SQLException | RuntimeException exception) {
@@ -136,9 +145,10 @@ public class ResourceRepository {
 
     public List<ResourceAllocation> findAllocations() throws SQLException {
         String sql = """
-                SELECT ra.*, r.resource_name
+                SELECT ra.*, r.resource_name, rt.activity_type AS task_activity_type
                 FROM resource_allocations ra
                 JOIN resources r ON ra.resource_id = r.resource_id
+                LEFT JOIN response_tasks rt ON ra.task_id = rt.task_id
                 ORDER BY ra.allocation_id DESC
                 """;
         List<ResourceAllocation> allocations = new ArrayList<>();
@@ -165,6 +175,8 @@ public class ResourceRepository {
         return new ResourceAllocation(
                 resultSet.getInt("allocation_id"),
                 resultSet.getInt("report_id"),
+                resultSet.getInt("task_id"),
+                resultSet.getString("task_activity_type"),
                 resultSet.getInt("resource_id"),
                 resultSet.getString("resource_name"),
                 resultSet.getInt("quantity_allocated"),

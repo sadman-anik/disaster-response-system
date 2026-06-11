@@ -66,7 +66,7 @@
                         <Label text="Available Resources" styleClass="stat-label" />
                         <Label fx:id="availableResourcesLabel" text="0" styleClass="stat-number" />
                     </VBox>
-                    <VBox styleClass="stat-card alert-stat-card" HBox.hgrow="ALWAYS">
+                    <VBox styleClass="stat-card" HBox.hgrow="ALWAYS">
                         <Label text="Resource Alerts" styleClass="stat-label" />
                         <Label fx:id="criticalResourceAlertsLabel" text="0" styleClass="stat-number" />
                     </VBox>
@@ -257,6 +257,8 @@
                         <Label text="Disaster Report" />
                         <ComboBox fx:id="resourceReportComboBox" prefWidth="520" />
                         <Button text="Recommend Resources" onAction="#recommendResourcesForSelectedReport" styleClass="secondary-button" />
+                        <Label text="Response Task" />
+                        <ComboBox fx:id="resourceTaskComboBox" prefWidth="520" promptText="Select task for selected report" />
                         <Label text="Allocate Resource" />
                         <ComboBox fx:id="resourceComboBox" prefWidth="520" />
                         <TextField fx:id="quantityField" promptText="Quantity" />
@@ -279,6 +281,7 @@
                             <columns>
                                 <TableColumn fx:id="allocationIdColumn" text="ID" prefWidth="55" />
                                 <TableColumn fx:id="allocationReportIdColumn" text="Report" prefWidth="70" />
+                                <TableColumn fx:id="allocationTaskColumn" text="Task" prefWidth="130" />
                                 <TableColumn fx:id="allocationResourceColumn" text="Resource" prefWidth="190" />
                                 <TableColumn fx:id="allocationQuantityColumn" text="Qty" prefWidth="70" />
                             </columns>

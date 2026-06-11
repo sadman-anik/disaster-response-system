@@ -70,7 +70,7 @@
 | Admin | View dashboard, search reports, update report status, and access all modules. |
 | Reporter | Submit disaster reports, check duplicates, and view report status. |
 | Assessment Officer | Assess disaster reports, generate priority score, and create response tasks. |
-| Resource Officer | View resources, recommend resources, and allocate resources to reports. |
+| Resource Officer | View resources, recommend resources, and allocate resources to response tasks. |
 | Department Officer | View assigned response tasks and update task progress. |
 | Auditor | View audit logs and system activity records. |
 
@@ -155,7 +155,7 @@ Important relationships:
 - One disaster report can have many assessments.
 - One disaster report can have many response tasks.
 - One department can be assigned many response tasks.
-- One disaster report can have many resource allocations.
+- One disaster report can have many resource allocations through its response tasks.
 - One resource can appear in many resource allocations.
 - Audit events record important changes made by users.
 
