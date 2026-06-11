@@ -108,6 +108,20 @@
     -fx-border-radius: 20;
 }
 
+.alert-stat-card {
+    -fx-border-color: #f3b2a7;
+}
+
+.alert-card {
+    -fx-border-color: #f3b2a7;
+    -fx-border-width: 1;
+    -fx-border-radius: 20;
+}
+
+.alert-title {
+    -fx-text-fill: #9f1239;
+}
+
 .stat-label {
     -fx-text-fill: #66752e;
     -fx-font-size: 13px;
