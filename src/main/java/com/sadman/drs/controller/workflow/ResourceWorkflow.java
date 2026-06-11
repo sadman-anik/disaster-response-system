@@ -2,19 +2,23 @@ package com.sadman.drs.controller.workflow;
 
 import com.sadman.drs.client.bridge.DRSClientService;
 import com.sadman.drs.controller.ui.AlertHelper;
+import com.sadman.drs.model.DepartmentResourceAlert;
 import com.sadman.drs.model.DisasterReport;
 import com.sadman.drs.model.Resource;
+import com.sadman.drs.server.service.DepartmentResourceAlertService;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
  * Handles resource recommendation and allocation workflow for the main JavaFX view.
  */
 public class ResourceWorkflow {
+    private final DepartmentResourceAlertService resourceAlertService = new DepartmentResourceAlertService();
     private final Supplier<DRSClientService> clientServiceSupplier;
     private final ComboBox<DisasterReport> resourceReportComboBox;
     private final ComboBox<Resource> resourceComboBox;
@@ -74,15 +78,39 @@ public class ResourceWorkflow {
         }
 
         try {
-            clientServiceSupplier.get().allocateResource(report.getReportId(), resource, quantity,
+            DRSClientService clientService = clientServiceSupplier.get();
+            clientService.allocateResource(report.getReportId(), resource, quantity,
                     "Allocated from Resources page");
             resourceOutputArea.setText("Allocated " + quantity + " x " + resource.getResourceName()
-                    + " to " + report.getReportDisplayName() + ".");
+                    + " to " + report.getReportDisplayName() + "."
+                    + buildPostAllocationAlertText(clientService));
             quantityField.clear();
             refreshAllData.run();
             showResources.run();
         } catch (IOException | ClassNotFoundException | IllegalArgumentException exception) {
             AlertHelper.showError("Resource Allocation Error", exception.getMessage());
         }
+    }
+
+    private String buildPostAllocationAlertText(DRSClientService clientService) throws IOException, ClassNotFoundException {
+        List<DepartmentResourceAlert> alerts = resourceAlertService.findCriticalAlerts(
+                clientService.findAllDepartments(),
+                clientService.findAllResources());
+
+        if (alerts.isEmpty()) {
+            return "\n\nNo department resource alerts are currently critical.";
+        }
+
+        StringBuilder builder = new StringBuilder("\n\nCritical department resource alerts:\n");
+        alerts.stream()
+                .limit(5)
+                .forEach(alert -> builder.append("- ")
+                        .append(alert.getAlertMessage())
+                        .append("\n"));
+
+        if (alerts.size() > 5) {
+            builder.append("- ").append(alerts.size() - 5).append(" more alert(s) shown in the Resources table.\n");
+        }
+        return builder.toString();
     }
 }
