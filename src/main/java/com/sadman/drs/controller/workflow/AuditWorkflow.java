@@ -7,6 +7,7 @@ import com.sadman.drs.controller.validation.FormValueHelper;
 import com.sadman.drs.model.AuditRecord;
 import javafx.collections.FXCollections;
 import javafx.scene.chart.BarChart;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 
@@ -20,15 +21,18 @@ import java.util.function.Supplier;
 public class AuditWorkflow {
     private final Supplier<DRSClientService> clientServiceSupplier;
     private final TextField auditSearchField;
+    private final ComboBox<String> auditActionFilterComboBox;
     private final TableView<AuditRecord> auditTable;
     private final BarChart<String, Number> auditActionChart;
 
     public AuditWorkflow(Supplier<DRSClientService> clientServiceSupplier,
                          TextField auditSearchField,
+                         ComboBox<String> auditActionFilterComboBox,
                          TableView<AuditRecord> auditTable,
                          BarChart<String, Number> auditActionChart) {
         this.clientServiceSupplier = clientServiceSupplier;
         this.auditSearchField = auditSearchField;
+        this.auditActionFilterComboBox = auditActionFilterComboBox;
         this.auditTable = auditTable;
         this.auditActionChart = auditActionChart;
     }
@@ -46,11 +50,26 @@ public class AuditWorkflow {
             List<AuditRecord> auditRecords = FormValueHelper.isBlank(keyword)
                     ? clientServiceSupplier.get().findAllAuditEvents()
                     : clientServiceSupplier.get().searchAuditEvents(keyword.trim());
+
+            String selectedAction = FormValueHelper.getValue(auditActionFilterComboBox);
+            auditRecords = applyActionFilter(auditRecords, selectedAction);
+
             auditTable.setItems(FXCollections.observableArrayList(auditRecords));
             AuditViewHelper.updateAuditActionChart(auditActionChart, auditRecords);
         } catch (IOException | ClassNotFoundException exception) {
             AlertHelper.showError("Audit Refresh Error", exception.getMessage());
         }
+    }
+
+    static List<AuditRecord> applyActionFilter(List<AuditRecord> auditRecords, String selectedAction) {
+        if (!FormValueHelper.isBlank(selectedAction)
+                && !"All Audit Actions".equalsIgnoreCase(selectedAction)) {
+            return auditRecords.stream()
+                    .filter(record -> selectedAction.equalsIgnoreCase(record.getActionType()))
+                    .toList();
+        }
+
+        return auditRecords;
     }
 
 }

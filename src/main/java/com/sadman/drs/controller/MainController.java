@@ -302,6 +302,8 @@ public class MainController {
     @FXML
     private TextField auditSearchField;
     @FXML
+    private ComboBox<String> auditActionFilterComboBox;
+    @FXML
     private TableView<AuditRecord> auditTable;
     @FXML
     private TableColumn<AuditRecord, Integer> auditIdColumn;
@@ -405,6 +407,7 @@ public class MainController {
         initializeFeatureWorkflows();
         initializeReportSeverityFilter();
         initializeReportStatusFilter();
+        initializeAuditActionFilter();
         configureReportStatusSelection();
         deleteResponseTaskButton.disableProperty().bind(Bindings.createBooleanBinding(
                 () -> {
@@ -475,6 +478,7 @@ public class MainController {
         auditWorkflow = new AuditWorkflow(
                 () -> clientService,
                 auditSearchField,
+                auditActionFilterComboBox,
                 auditTable,
                 auditActionChart);
 
@@ -530,6 +534,27 @@ public class MainController {
         statusFilterComboBox.setOnAction(event -> {
             if (reportWorkflow != null) {
                 reportWorkflow.searchReports();
+            }
+        });
+    }
+
+    private void initializeAuditActionFilter() {
+        auditActionFilterComboBox.getItems().setAll(
+                "All Audit Actions",
+                "Report Submitted",
+                "Assessment Saved",
+                "Task Created",
+                "Resource Allocated",
+                "Report Status Updated",
+                "Task Status Updated",
+                "Task Deleted"
+        );
+
+        auditActionFilterComboBox.getSelectionModel().selectFirst();
+
+        auditActionFilterComboBox.setOnAction(event -> {
+            if (auditWorkflow != null) {
+                auditWorkflow.searchAuditRecords();
             }
         });
     }

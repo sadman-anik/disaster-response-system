@@ -349,8 +349,9 @@
                 <HBox spacing="18">
                     <VBox styleClass="card" spacing="12" HBox.hgrow="ALWAYS">
                         <Label text="Audit Log Search" styleClass="section-title" />
-                        <HBox spacing="10">
+                        <HBox spacing="10" alignment="CENTER_LEFT">
                             <TextField fx:id="auditSearchField" promptText="Search audit actions, users, entities..." HBox.hgrow="ALWAYS" />
+                            <ComboBox fx:id="auditActionFilterComboBox" promptText="All Audit Actions" prefWidth="190" />
                             <Button text="Search" onAction="#searchAuditRecords" styleClass="secondary-button" />
                         </HBox>
                         <TableView fx:id="auditTable" VBox.vgrow="ALWAYS">

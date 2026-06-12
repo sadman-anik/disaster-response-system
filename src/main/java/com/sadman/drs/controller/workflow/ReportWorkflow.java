@@ -158,15 +158,26 @@ public class ReportWorkflow {
     }
 
     public void searchReports() {
-    String keyword = searchField.getText();
-    String selectedSeverity = FormValueHelper.getValue(severityFilterComboBox);
-    String selectedStatus = FormValueHelper.getValue(statusFilterComboBox);
+        String keyword = searchField.getText();
+        String selectedSeverity = FormValueHelper.getValue(severityFilterComboBox);
+        String selectedStatus = FormValueHelper.getValue(statusFilterComboBox);
 
-    try {
-        List<DisasterReport> reports = FormValueHelper.isBlank(keyword)
-                ? clientServiceSupplier.get().findAllReports()
-                : clientServiceSupplier.get().searchReports(keyword.trim());
+        try {
+            List<DisasterReport> reports = FormValueHelper.isBlank(keyword)
+                    ? clientServiceSupplier.get().findAllReports()
+                    : clientServiceSupplier.get().searchReports(keyword.trim());
 
+            reports = applyReportFilters(reports, selectedSeverity, selectedStatus);
+
+            reportTable.setItems(FXCollections.observableArrayList(reports));
+        } catch (IOException | ClassNotFoundException exception) {
+            AlertHelper.showError("Search Error", exception.getMessage());
+        }
+    }
+
+    static List<DisasterReport> applyReportFilters(List<DisasterReport> reports,
+                                                   String selectedSeverity,
+                                                   String selectedStatus) {
         if (!FormValueHelper.isBlank(selectedSeverity)
                 && !"All Severities".equalsIgnoreCase(selectedSeverity)) {
             reports = reports.stream()
@@ -181,11 +192,8 @@ public class ReportWorkflow {
                     .toList();
         }
 
-        reportTable.setItems(FXCollections.observableArrayList(reports));
-    } catch (IOException | ClassNotFoundException exception) {
-        AlertHelper.showError("Search Error", exception.getMessage());
+        return reports;
     }
-}
 
     public void updateSelectedReportStatus() {
         DisasterReport selectedReport = reportTable.getSelectionModel().getSelectedItem();

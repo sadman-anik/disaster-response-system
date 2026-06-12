@@ -38,6 +38,8 @@
 | FR14 | The system shall provide dashboard charts and summary counts for reports, tasks, available resources, and critical resource alerts. |
 | FR15 | The system shall maintain audit records for important actions such as report submission, assessment, resource allocation, and task updates. |
 | FR16 | The system shall show critical department resource warnings when available resources are below the required threshold for active response tasks. |
+| FR17 | The system shall allow authorised users to filter disaster reports by report status in the Report Status page. |
+| FR18 | The system shall allow authorised users to filter audit log records by audit action type in the Audit Logs page. |
 
 ### 2.2 Non-Functional Requirements
 
@@ -185,6 +187,10 @@ Important relationships:
 | T17 | Complete report after tasks complete | All response tasks for the report are Completed | Report status changes to Completed, row becomes light gray, and status update is disabled | Pass |
 | T18 | Hide completed reports from allocation | Report status is Completed | Report is not shown in assessment/task/resource allocation dropdowns | Pass |
 | T19 | Delete pending response task | Select a Pending auto-generated or custom task from the Response Task List and confirm deletion | Task is removed from the list, related resource allocations are released, and dashboard/task data refreshes | Pass |
+| T20 | Report status dropdown filter | Open Report Status page and select `In Progress` from the status filter | Report table only shows reports with `In Progress` status; selecting `All Report Statuses` shows all matching reports again | Pass, covered by `WorkflowFilterTest.reportStatusFilterShouldOnlyReturnSelectedStatus` |
+| T21 | Report severity and status filter combination | Select `High` severity and `Completed` status from the report filters | Report table shows only reports matching both `High` severity and `Completed` status | Pass, covered by `WorkflowFilterTest.reportStatusFilterShouldCombineWithSeverityFilter` |
+| T22 | Audit action dropdown filter | Open Audit Logs page and select `Task Created` from the action filter | Audit table and audit summary chart only show audit records with `Task Created` action type | Pass, covered by `WorkflowFilterTest.auditActionFilterShouldOnlyReturnSelectedAction` |
+| T23 | Audit all actions filter option | Select `All Audit Actions` from the audit action filter | Audit table shows all audit records again without action-type filtering | Pass, covered by `WorkflowFilterTest.auditActionFilterShouldReturnAllRecordsForAllActionsOption` |
 
 ## 5. Evidence of Automated Testing
 
@@ -201,7 +207,7 @@ mvn test
 2. Test result showing:
 
 ```text
-Tests run: 26, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 30, Failures: 0, Errors: 0, Skipped: 0
 BUILD SUCCESS
 ```
 
@@ -212,6 +218,7 @@ BUILD SUCCESS
 - `src/test/java/com/sadman/drs/server/service/AuthorizationServiceTest.java`
 - `src/test/java/com/sadman/drs/security/SecurityUtilityTest.java`
 - `src/test/java/com/sadman/drs/model/StatusValuesTest.java`
+- `src/test/java/com/sadman/drs/controller/workflow/WorkflowFilterTest.java`
 
 Recommended manual workflow screenshots for the new resource/status rules:
 
